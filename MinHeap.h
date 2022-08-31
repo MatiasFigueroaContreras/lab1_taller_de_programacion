@@ -15,9 +15,11 @@ private:
     int minChildIndex(int i);
     void swap(int i, int j);
     void increaseSpace();
+    void printAux(int i, int c);
 public:
     MinHeap(int initialMaxLength);
     ~MinHeap();
     void insert(int score, Rubik *r);
     Rubik *getMinRubik();
+    void print();
 };

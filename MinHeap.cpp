@@ -4,14 +4,14 @@ MinHeap::MinHeap(int initialMaxLength)
 {
     maxLength = initialMaxLength;
     length = 0;
-    *rubiks = new Rubik[maxLength];
-    scores = new int[maxLength];
+    rubiks = (Rubik**) malloc(maxLength*sizeof(Rubik*));
+    scores = (int*) malloc(maxLength*sizeof(int));
 }
 
 MinHeap::~MinHeap()
 {
-    delete rubiks;
-    delete scores;
+    free(rubiks);
+    free(scores);
 }
 
 int MinHeap::leftChildIndex(int i)
@@ -32,12 +32,12 @@ int MinHeap::parentIndex(int i)
 int MinHeap::minChildIndex(int i)
 {
     int l = leftChildIndex(i);
-    int r = leftChildIndex(i);
+    int r = rightChildIndex(i);
 
-    if(l < length){
+    if(l > length){
         return i;
     }
-    if(r < length || scores[l] < scores[r]){
+    if(r > length || scores[l] < scores[r]){
         return l;
     }
     else{
@@ -57,8 +57,8 @@ void MinHeap::swap(int i, int j){
 
 void MinHeap::increaseSpace(){
     maxLength *= 2;
-    scores = (int *)realloc(scores, maxLength);
-    rubiks = (Rubik **)realloc(rubiks, maxLength);
+    scores = (int *)realloc(scores, maxLength*sizeof(int));
+    rubiks = (Rubik **)realloc(rubiks, maxLength * sizeof(Rubik*));
 }
 
 void MinHeap::insert(int score, Rubik *r)
@@ -78,7 +78,7 @@ void MinHeap::insert(int score, Rubik *r)
 }
 
 Rubik *MinHeap::getMinRubik(){
-    if(length = 0){
+    if(length == 0){
         return nullptr;
     }
     Rubik *min = rubiks[0];
@@ -86,10 +86,35 @@ Rubik *MinHeap::getMinRubik(){
     rubiks[0] = rubiks[length];
     scores[0] = scores[length];
 
-    for (int i = 0; i < length && scores[minChildIndex(i)] > scores[i]; i = minChildIndex(i))
+    int j;
+    for (int i = 0; i < length && scores[minChildIndex(i)] != scores[i]; i = j)
     {
-        swap(i, minChildIndex(i));
+        j = minChildIndex(i);
+        swap(i, j);
     }
 
-    return rubiks[0];
+    return min;
+}
+
+void MinHeap::printAux(int i, int c){
+    if (i >= length)
+    {
+        return;
+    }
+
+    c += 10;
+    printAux(rightChildIndex(i), c);
+    std::cout << std::endl;
+    for(int i = 10; i < c; i++){
+        std::cout << " ";
+    }
+
+    std::cout << scores[i] << "\n";
+    printAux(leftChildIndex(i), c);
+}
+
+void MinHeap::print(){
+    std::cout << "-----------HEAP-----------" << std::endl;
+    printAux(0, 0);
+    std::cout << "--------------------------" << std::endl;
 }
