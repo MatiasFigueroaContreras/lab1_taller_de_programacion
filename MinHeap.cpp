@@ -4,13 +4,13 @@ MinHeap::MinHeap(int initialMaxLength)
 {
     maxLength = initialMaxLength;
     length = 0;
-    rubiks = (Rubik**) malloc(maxLength*sizeof(Rubik*));
+    cubesState = (State **)malloc(maxLength * sizeof(State *));
     scores = (int*) malloc(maxLength*sizeof(int));
 }
 
 MinHeap::~MinHeap()
 {
-    free(rubiks);
+    free(cubesState);
     free(scores);
 }
 
@@ -46,9 +46,9 @@ int MinHeap::minChildIndex(int i)
 }
 
 void MinHeap::swap(int i, int j){
-    Rubik* rTemp = rubiks[i];
-    rubiks[i] = rubiks[j];
-    rubiks[j] = rTemp;
+    State* rTemp = cubesState[i];
+    cubesState[i] = cubesState[j];
+    cubesState[j] = rTemp;
 
     int sTemp = scores[i];
     scores[i] = scores[j];
@@ -58,16 +58,16 @@ void MinHeap::swap(int i, int j){
 void MinHeap::increaseSpace(){
     maxLength *= 2;
     scores = (int *)realloc(scores, maxLength*sizeof(int));
-    rubiks = (Rubik **)realloc(rubiks, maxLength * sizeof(Rubik*));
+    cubesState = (State **)realloc(cubesState, maxLength * sizeof(State *));
 }
 
-void MinHeap::insert(int score, Rubik *r)
+void MinHeap::insert(int score, State *state)
 {
     if(length == maxLength){
         increaseSpace();
     }
 
-    rubiks[length] = r;
+    cubesState[length] = state;
     scores[length] = score;
     
     for(int i = length; i > 0 && scores[parentIndex(i)] > scores[i]; i = parentIndex(i)){
@@ -77,13 +77,13 @@ void MinHeap::insert(int score, Rubik *r)
     length++;
 }
 
-Rubik *MinHeap::getMinRubik(){
+State *MinHeap::pull(){
     if(length == 0){
         return nullptr;
     }
-    Rubik *min = rubiks[0];
+    State *min = cubesState[0];
     length--;
-    rubiks[0] = rubiks[length];
+    cubesState[0] = cubesState[length];
     scores[0] = scores[length];
 
     int j;

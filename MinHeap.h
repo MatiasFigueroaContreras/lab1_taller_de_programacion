@@ -1,10 +1,10 @@
 #include <iostream>
-#include "Rubik.h"
+#include "State.h"
 
 class MinHeap
 {
 private:
-    Rubik **rubiks;
+    State **cubesState;
     int *scores;
     int maxLength;
     int length;
@@ -19,7 +19,7 @@ private:
 public:
     MinHeap(int initialMaxLength);
     ~MinHeap();
-    void insert(int score, Rubik *r);
-    Rubik *getMinRubik();
+    void insert(int score, State *state);
+    State *pull();
     void print();
 };
