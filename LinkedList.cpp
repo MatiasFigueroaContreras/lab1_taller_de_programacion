@@ -16,7 +16,7 @@ LinkedList::~LinkedList(){
 void LinkedList::insert(Rubik *cube, int code){
     Node *node = new Node(cube, code);
     node->next = head;
-    head->next = node;
+    head = node;
 }
 
 bool LinkedList::isInList(Rubik *cube, int code)

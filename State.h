@@ -3,13 +3,15 @@
 class State
 {
 private:
+
+public:
     Rubik *cube;
     State *previous;
     int depth;
     char move;
     int cw;
-public:
     State(Rubik *cube, State *previous, int depth, char move, int cw);
     ~State();
+    void printPath();
 };
 

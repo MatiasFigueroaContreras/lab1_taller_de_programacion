@@ -21,5 +21,6 @@ public:
     ~MinHeap();
     void insert(int score, State *state);
     State *pull();
+    bool isEmpty();
     void print();
 };

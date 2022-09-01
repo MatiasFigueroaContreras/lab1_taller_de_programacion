@@ -96,6 +96,10 @@ State *MinHeap::pull(){
     return min;
 }
 
+bool MinHeap::isEmpty(){
+    return length == 0;
+}
+
 void MinHeap::printAux(int i, int c){
     if (i >= length)
     {

@@ -1,7 +1,12 @@
-#include "HashTable.h";
+#include "HashTable.h"
 
 HashTable::HashTable(int initialMaxLength){
     table = (LinkedList **)malloc(initialMaxLength * sizeof(LinkedList *));
+    for (int i = 0; i < initialMaxLength; i++)
+    {
+        table[i] = (LinkedList *)malloc(initialMaxLength * sizeof(LinkedList));
+    }
+    length = initialMaxLength;
 }
 
 HashTable::~HashTable()
