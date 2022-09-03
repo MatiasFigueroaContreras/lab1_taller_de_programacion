@@ -1,4 +1,4 @@
-all: clean test_HashTable test_MinHeap run
+all: clean test_State run
 
 main: main.cpp Rubik.o MinHeap.o
 	g++ -g -o main Rubik.o MinHeap.o main.cpp
@@ -8,6 +8,15 @@ test_MinHeap: test_MinHeap.cpp Rubik.o MinHeap.o State.o
 
 test_HashTable: test_HashTable.cpp Rubik.o HashTable.o LinkedList.o Node.o
 	g++ -g -o test_HashTable Rubik.o HashTable.o LinkedList.o Node.o test_HashTable.cpp
+
+test_LinkedList: test_LinkedList.cpp Rubik.o LinkedList.o Node.o
+	g++ -g -o test_LinkedList Rubik.o LinkedList.o Node.o test_LinkedList.cpp
+
+test_Node: test_Node.cpp Rubik.o Node.o
+	g++ -g -o test_Node Rubik.o Node.o test_Node.cpp
+
+test_State: test_State.cpp Rubik.o State.o
+	g++ -g -o test_State Rubik.o State.o test_State.cpp
 
 Rubik.o: Rubik.cpp Rubik.h
 	g++ -g -c Rubik.cpp
@@ -28,8 +37,7 @@ Node.o: Node.cpp Node.h
 	g++ -g -c Node.cpp
 
 clean:
-	rm -f main test_MinHeap test_HashTable *.o
+	rm -f main test_MinHeap test_HashTable test_LinkedList test_Node test_State *.o
 
 run:
-	./test_HashTable
-	./test_MinHeap
+	./test_State
