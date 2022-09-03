@@ -7,9 +7,9 @@ LinkedList::LinkedList(){
 LinkedList::~LinkedList(){
     while (head != nullptr)
     {
-        Node *temp = head->next;
-        delete head;
-        head = temp;
+        Node *temp = head;
+        head = head->next;
+        delete temp;
     }
 }
 
@@ -27,4 +27,11 @@ bool LinkedList::isInList(Rubik *cube, int code)
         }
     }
     return false;
+}
+
+void LinkedList::print(){
+    for (Node *current = head; current != nullptr; current = current->next)
+    {
+        std::cout << current->code << std::endl;
+    }
 }

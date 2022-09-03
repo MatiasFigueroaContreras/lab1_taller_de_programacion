@@ -6,7 +6,6 @@ class HashTable
 private:
     int length;
     LinkedList **table;
-    int hashCode(Rubik *cube);
     int hashFunction(int key);
     void increaseSpace();
 public:

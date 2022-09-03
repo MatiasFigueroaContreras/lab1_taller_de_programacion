@@ -9,4 +9,5 @@ public:
     ~LinkedList();
     void insert(Rubik *cube, int code);
     bool isInList(Rubik *cube, int code);
+    void print();
 };

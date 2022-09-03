@@ -10,4 +10,9 @@ int main(){
 	hash->add(t);
 
 	std::cout << hash->isInTable(t) << std::endl;
+
+	delete c;
+	delete p;
+	delete t;
+	delete hash;
 }
