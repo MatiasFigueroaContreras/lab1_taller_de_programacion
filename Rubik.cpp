@@ -46,26 +46,6 @@ Rubik::~Rubik()
     delete[] B;
 }
 
-bool Rubik::equals(Rubik *r)
-{
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            if (U[i][j] != r->U[i][j] ||
-                D[i][j] != r->D[i][j] ||
-                L[i][j] != r->L[i][j] ||
-                R[i][j] != r->R[i][j] ||
-                F[i][j] != r->F[i][j] ||
-                B[i][j] != r->B[i][j])
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 Rubik *Rubik::rotate(int cw, char face){
     Rubik *cube = copy();
 
@@ -244,7 +224,7 @@ void Rubik::disarm(){
     int cws[2] = {1, -1};
 
     std::srand(time(NULL));
-    for(int i = 0; i < 10000; i++){
+    for(int i = 0; i < 10; i++){
         temp = dCube;
         randFace = std::rand() % 6;
         randCw = std::rand() % 2;
@@ -321,4 +301,44 @@ void Rubik::printFace(int **face){
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+bool Rubik::isSolved()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (U[i][j] != 33 || 
+                D[i][j] != 37 ||
+                L[i][j] != 34 ||
+                R[i][j] != 32 ||
+                F[i][j] != 31 ||
+                B[i][j] != 35)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Rubik::equals(Rubik *r)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (U[i][j] != r->U[i][j] ||
+                D[i][j] != r->D[i][j] ||
+                L[i][j] != r->L[i][j] ||
+                R[i][j] != r->R[i][j] ||
+                F[i][j] != r->F[i][j] ||
+                B[i][j] != r->B[i][j])
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }

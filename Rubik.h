@@ -1,3 +1,5 @@
+#ifndef RUBIK_H
+#define RUBIK_H
 #include <iostream>
 
 #define YELLOW 33;
@@ -33,3 +35,4 @@ class Rubik{
         void rotateAroundBack(int cw, int ***nFaces, int ***oFaces);
         void printFace(int **face);
 };
+#endif
