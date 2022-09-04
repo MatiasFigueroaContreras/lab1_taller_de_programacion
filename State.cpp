@@ -1,7 +1,18 @@
 #include "State.h"
-
-State::State(Rubik *cube, State *previous, int depth, char move, int clockWise)
-{
+/*
+    Metodo: Constructor
+    Descripcion: este metodo permite crear un estado con el
+        cubo Rubik, el estado previo, la profundidad, el movimiento,
+        y el sentido de este movimiento para llegar al cubo.
+    Parametros:
+        -cube: Rubik que contendra el estado.
+        -previus: estado previo.
+        -depth: profundidad del estado.
+        -move: movimiento realizado para llegar a el estado actual.
+        -clockWise: sentido del movimiento realizado.
+    Retorno: La direccion del objeto creado.
+*/
+State::State(Rubik *cube, State *previous, int depth, char move, int clockWise){
     this->cube = cube;
     this->previous = previous;
     this->depth = depth;
@@ -13,6 +24,12 @@ State::~State(){
 
 }
 
+/*
+    Metodo: 
+    Descripcion: este metodo permite imprimir por consola 
+        los movimientos necesarios para llegar al estado actual.
+    Retorno: vacio.
+*/
 void State::printPath(){
     for(State *current = this; current != nullptr; current = current->previous){
         std::cout << current->move;

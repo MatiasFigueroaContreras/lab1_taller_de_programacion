@@ -1,7 +1,6 @@
 #include "Rubik.h"
 
-class Node
-{
+class Node{
 public:
     Rubik *cube;
     int code;

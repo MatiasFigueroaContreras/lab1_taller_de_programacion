@@ -1,8 +1,7 @@
 #include <iostream>
 #include "State.h"
 
-class MinHeap
-{
+class MinHeap{
 private:
     State **cubesState;
     int *scores;

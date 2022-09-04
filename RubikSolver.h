@@ -1,8 +1,7 @@
 #include "HashTable.h"
 #include "MinHeap.h"
 
-class RubikSolver
-{
+class RubikSolver{
 private:
     
 public:

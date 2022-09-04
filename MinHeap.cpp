@@ -1,36 +1,81 @@
 #include "MinHeap.h"
-
-MinHeap::MinHeap(int initialMaxLength)
-{
+/*
+    Metodo: Constructor
+    Descripcion: este metodo permite crear un heap con prioridad
+        para los valores minimos, con un largo inicial dado.
+    Parametros:
+        -initialMaxLength: largo maximo de partida que tendra el heap.
+    Retorno: La direccion del objeto creado.
+*/
+MinHeap::MinHeap(int initialMaxLength){
     maxLength = initialMaxLength;
     length = 0;
     cubesState = (State **)malloc(maxLength * sizeof(State *));
     scores = (int*) malloc(maxLength*sizeof(int));
 }
 
-MinHeap::~MinHeap()
-{
+/*
+    Metodo: Destructor
+    Descripcion: este metodo permite eliminar el heap,
+        liberando la memoria en donde se encuentra el
+        heap que contiene los puntajes y el de las
+        direcciones de los estados.
+    Retorno: vacio.
+*/
+MinHeap::~MinHeap(){
     free(cubesState);
     free(scores);
 }
 
-int MinHeap::leftChildIndex(int i)
-{
+/*
+    Metodo: 
+    Descripcion: este metodo obtiene la posicion en donde se
+        encuentra el hijo izquierdo, a traves del indice del
+        padre.
+    Parametros:
+        -i: indice del valor padre.
+    Retorno: la posicion del hijo izquierdo.
+*/
+int MinHeap::leftChildIndex(int i){
     return 2*i + 1;
 }
 
-int MinHeap::rightChildIndex(int i)
-{
+/*
+    Metodo:
+    Descripcion: este metodo obtiene la posicion en donde se
+        encuentra el hijo derecho, a traves del indice del
+        padre.
+    Parametros:
+        -i: indice del valor padre.
+    Retorno: la posicion del hijo derecho.
+*/
+int MinHeap::rightChildIndex(int i){
     return 2 * i + 2;
 }
 
-int MinHeap::parentIndex(int i)
-{
+/*
+    Metodo:
+    Descripcion: este metodo obtiene la posicion en donde se
+        encuentra el padre, a traves del indice de alguno de
+        sus 2 hijos.
+    Parametros:
+        -i: indice de uno de sus hijos.
+    Retorno: la posicion del padre.
+*/
+int MinHeap::parentIndex(int i){
     return (i-1)/2;
 }
 
-int MinHeap::minChildIndex(int i)
-{
+/*
+    Metodo:
+    Descripcion: este metodo obtiene el indice del hijo con
+        menor puntaje, y en caso de que no tenga hijos
+        este devuelve el mismo indice dado.
+    Parametros:
+        -i: indice del padre.
+    Retorno: la posicion del hijo con menor puntaje.
+*/
+int MinHeap::minChildIndex(int i){
     int l = leftChildIndex(i);
     int r = rightChildIndex(i);
 
@@ -45,6 +90,16 @@ int MinHeap::minChildIndex(int i)
     }
 }
 
+/*
+    Metodo:
+    Descripcion: este metodo hace un cambio entre los
+        puntajes y estados que se encuentran en los
+        indices dados.
+    Parametros:
+        -i: indice 1 del valor a cambiar.
+        -j: indice 2 del valor a cambiar.
+    Retorno: vacio.
+*/
 void MinHeap::swap(int i, int j){
     State* rTemp = cubesState[i];
     cubesState[i] = cubesState[j];
@@ -55,14 +110,28 @@ void MinHeap::swap(int i, int j){
     scores[j] = sTemp;
 }
 
+/*
+    Metodo:
+    Descripcion: este metodo duplica el espacio del heap
+    Retorno: vacio.
+*/
 void MinHeap::increaseSpace(){
     maxLength *= 2;
     scores = (int *)realloc(scores, maxLength*sizeof(int));
     cubesState = (State **)realloc(cubesState, maxLength * sizeof(State *));
 }
 
-void MinHeap::insert(int score, State *state)
-{
+/*
+    Metodo:
+    Descripcion: permite agregar un estado y el puntaje asociado a este
+        al heap, de manera tal que todos los "nodos" padres tendran menor
+        puntaje que los hijos.
+    Parametros:
+        -state: estado del cubo Rubik a ser agregado al heap
+        -score: puntaje asociado a ese estado el cual permitira regular el heap.
+    Retorno: vacio.
+*/
+void MinHeap::insert(int score, State *state){
     if(length == maxLength){
         increaseSpace();
     }
@@ -77,6 +146,11 @@ void MinHeap::insert(int score, State *state)
     length++;
 }
 
+/*
+    Metodo:
+    Descripcion: permite sacar el estado con el menor puntaje.
+    Retorno: estado con el menor puntaje.
+*/
 State *MinHeap::pull(){
     if(length == 0){
         return nullptr;
@@ -87,8 +161,7 @@ State *MinHeap::pull(){
     scores[0] = scores[length];
 
     int j;
-    for (int i = 0; i < length && scores[minChildIndex(i)] != scores[i]; i = j)
-    {
+    for (int i = 0; i < length && scores[minChildIndex(i)] != scores[i]; i = j){
         j = minChildIndex(i);
         swap(i, j);
     }
@@ -96,13 +169,29 @@ State *MinHeap::pull(){
     return min;
 }
 
+/*
+    Metodo:
+    Descripcion: este metodo permite saber si el heap esta vacio.
+    Retorno: 
+        -true: si el heap esta vacio
+        -false: si el heap no esta vacio.
+*/
 bool MinHeap::isEmpty(){
     return length == 0;
 }
 
+/*
+    Metodo:
+    Descripcion: este metodo permite imprimir por consola
+        una representacion del heap, mostrando los puntajes, 
+        mediante el uso de recursividad.
+    Parametros:
+        -i: posicion del puntaje a mostrar.
+        -c: cantidad de espacios entre puntajes.
+    Retorno: vacio.
+*/
 void MinHeap::printAux(int i, int c){
-    if (i >= length)
-    {
+    if (i >= length){
         return;
     }
 
@@ -117,6 +206,12 @@ void MinHeap::printAux(int i, int c){
     printAux(leftChildIndex(i), c);
 }
 
+/*
+    Metodo:
+    Descripcion: este metodo permite imprimir por consola
+        una representacion del heap, con sus puntajes.
+    Retorno: vacio.
+*/
 void MinHeap::print(){
     std::cout << "-----------HEAP-----------" << std::endl;
     printAux(0, 0);

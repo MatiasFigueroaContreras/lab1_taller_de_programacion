@@ -1,7 +1,6 @@
 #include "Rubik.h"
 
-class State
-{
+class State{
 private:
 
 public:
@@ -14,4 +13,3 @@ public:
     ~State();
     void printPath();
 };
-
