@@ -1,5 +1,15 @@
 #include "HashTable.h"
 /*
+    Descripcion de la clase HashTable:
+    Esta clase busca representar una tabla de hash,
+    mediante una lista de listas enlazadas, para
+    asi manejar las colisiones que puedan existir.
+    Ademas otorga operaciones para agregar y buscar
+    de manera eficiente los cubos Rubiks con su
+    respectivo codigo que sera utilizado como llave.
+*/
+
+/*
     Metodo: Constructor
     Descripcion: este metodo permite crear una tabla de hash
         con el largo dado.

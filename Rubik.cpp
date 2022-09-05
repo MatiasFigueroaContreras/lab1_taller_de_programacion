@@ -1,5 +1,27 @@
 #include "Rubik.h"
 /*
+    Descripcion de la clase Rubik:
+    Esta clase representa un cubo Rubik, y esta
+    implementada mediante matrices para cada una
+    de las caras del cubo:
+    -U -> UP
+    -D -> Down
+    -L -> Left
+    -R -> Right
+    -F -> Front
+    -B -> Back
+    esta clase permite principalmente realizar
+    los movimientos que permite el cubo Rubik,
+    girando alguna de las caras en sentido del
+    reloj (estipulado con el valor 1), o en
+    contra del sentido del reloj (con el valor -1).
+    Ademas, permite imprimir la representacion de
+    este, desarmarlo, consultar si esta resuelto,
+    consultar si es igual a otro cubo dado, copiar
+    el cubo y obtener su valor entero representativo.
+*/
+
+/*
     Metodo: Constructor
     Descripcion: este metodo permite crear un cubo Rubik armado de
         partida.

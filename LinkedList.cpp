@@ -1,5 +1,14 @@
 #include "LinkedList.h"
 /*
+    Descripcion de la clase LinkedList:
+    Esta clase representa una lista enlazada utilizando
+    nodos, en donde guarda el  primer nodo de la lista
+    para asi poder recorrer esta mediante el uso de
+    punteros. Por otro lado, esta clase permite
+    imprimir, insertar y buscar en la lista.
+*/
+
+/*
     Metodo: Constructor
     Descripcion: este metodo permite crear una lista enlazada.
     Retorno: La direccion del objeto creado.

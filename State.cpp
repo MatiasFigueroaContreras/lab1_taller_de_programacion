@@ -1,5 +1,18 @@
 #include "State.h"
 /*
+    Descripcion de la clase State:
+    Esta clase representa el estado de un cubo rubik
+    teniendo informacion relevante para este, como
+    el estado anterior, el movimiento con el que
+    se llego al cubo actual y el sentido de la rotacion
+    de este, la profundidad del movimiento (que tan
+    lejos esta del estado inicial), y el cubo resultante.
+    Por otra parte, la clase permite imprimir los movimientos
+    realizados desde el estado inicial para llegar al estado
+    actual.
+*/
+
+/*
     Metodo: Constructor
     Descripcion: este metodo permite crear un estado con el
         cubo Rubik, el estado previo, la profundidad, el movimiento,

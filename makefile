@@ -1,4 +1,4 @@
-all: clean test_RubikSolver run
+all: clean test_Rubik test_RubikSolver test_MinHeap test_HashTable test_LinkedList test_Node test_State run
 
 main: main.cpp Rubik.o MinHeap.o
 	g++ -g -o main Rubik.o MinHeap.o main.cpp
@@ -49,4 +49,10 @@ clean:
 	rm -f main test_Rubik test_RubikSolver test_MinHeap test_HashTable test_LinkedList test_Node test_State *.o
 
 run:
+	./test_Rubik
 	./test_RubikSolver
+	./test_MinHeap
+	./test_HashTable
+	./test_LinkedList
+	./test_Node
+	./test_State

@@ -1,4 +1,9 @@
 #include "RubikSolver.h"
+/*
+    Descripcion de la clase RubikSolver:
+    Esta clase busca resolver un cubo Rubik mediante
+    el algoritmo A* de una forma eficiente.
+*/
 
 RubikSolver::RubikSolver(){
 

@@ -1,5 +1,17 @@
 #include "MinHeap.h"
 /*
+    Descripcion de la clase MinHeap:
+    Esta clase representa una cola de prioridad para el valor
+    minimo mediante el uso de un heap, el cual tiene la estructura 
+    de un arbol binario, esto implementado mediante el uso de un arreglo 
+    en el cual se trabaja mediante sus indices, para obtener los "nodos"
+    padres e hijos. Por otra parte, esta clase permite ingresar estados
+    con su respectivo puntaje, sacar el estado con menor puntaje, imprimir
+    los puntajes mediante la representacion del heap y verificar si el
+    heap esta vacio.
+*/
+
+/*
     Metodo: Constructor
     Descripcion: este metodo permite crear un heap con prioridad
         para los valores minimos, con un largo inicial dado.
