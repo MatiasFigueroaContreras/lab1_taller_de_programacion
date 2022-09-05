@@ -1,7 +1,8 @@
 #include <iostream>
 #include "State.h"
 
-class MinHeap{
+class MinHeap
+{
 private:
     State **cubesState;
     int *scores;
@@ -15,6 +16,7 @@ private:
     void swap(int i, int j);
     void increaseSpace();
     void printAux(int i, int c);
+
 public:
     MinHeap(int initialMaxLength);
     ~MinHeap();

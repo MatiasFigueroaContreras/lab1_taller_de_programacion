@@ -18,12 +18,13 @@
             el nodo.
     Retorno: La direccion del objeto creado.
 */
-Node::Node(Rubik *cube, int code){
+Node::Node(Rubik *cube, int code)
+{
     this->cube = cube;
     this->code = code;
     this->next = nullptr;
 }
 
-Node::~Node(){
-    
+Node::~Node()
+{
 }

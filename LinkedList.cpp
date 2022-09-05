@@ -13,7 +13,8 @@
     Descripcion: este metodo permite crear una lista enlazada.
     Retorno: La direccion del objeto creado.
 */
-LinkedList::LinkedList(){
+LinkedList::LinkedList()
+{
     head = nullptr;
 }
 
@@ -23,8 +24,10 @@ LinkedList::LinkedList(){
         liberando la memoria en donde se encuentra esta.
     Retorno: vacio.
 */
-LinkedList::~LinkedList(){
-    while (head != nullptr){
+LinkedList::~LinkedList()
+{
+    while (head != nullptr)
+    {
         Node *temp = head;
         head = head->next;
         delete temp;
@@ -33,7 +36,7 @@ LinkedList::~LinkedList(){
 
 /*
     Metodo:
-    Descripcion: este metodo permite agregar un nodo creado con 
+    Descripcion: este metodo permite agregar un nodo creado con
         un cubo Rubik y su codigo asociado dado, al principio
         de la lista enlazada.
     Parametros:
@@ -42,7 +45,8 @@ LinkedList::~LinkedList(){
             nodo a agregar.
     Retorno: vacio.
 */
-void LinkedList::insert(Rubik *cube, int code){
+void LinkedList::insert(Rubik *cube, int code)
+{
     Node *node = new Node(cube, code);
     node->next = head;
     head = node;
@@ -60,9 +64,12 @@ void LinkedList::insert(Rubik *cube, int code){
         -true: si el cubo esta en la lista enlazada.
         -false: si el cubo no esta en la lista enlazada.
 */
-bool LinkedList::isInList(Rubik *cube, int code){
-    for(Node *current = head; current != nullptr; current = current->next){
-        if(current->code == code && cube->equals(current->cube)){
+bool LinkedList::isInList(Rubik *cube, int code)
+{
+    for (Node *current = head; current != nullptr; current = current->next)
+    {
+        if (current->code == code && cube->equals(current->cube))
+        {
             return true;
         }
     }
@@ -75,8 +82,10 @@ bool LinkedList::isInList(Rubik *cube, int code){
         a la lista enlazada.
     Retorno: vacio.
 */
-void LinkedList::print(){
-    for (Node *current = head; current != nullptr; current = current->next){
+void LinkedList::print()
+{
+    for (Node *current = head; current != nullptr; current = current->next)
+    {
         std::cout << current->code << std::endl;
     }
 }

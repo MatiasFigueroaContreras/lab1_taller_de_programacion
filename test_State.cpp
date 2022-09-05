@@ -1,6 +1,7 @@
 #include "State.h"
 
-int main(){
+int main()
+{
     Rubik *cube = new Rubik();
     State *s1 = new State(cube, nullptr, 0, ' ', 0);
     Rubik *cube2 = cube->rotate(-1, 'R');

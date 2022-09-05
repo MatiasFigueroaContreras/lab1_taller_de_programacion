@@ -1,6 +1,7 @@
 #include "HashTable.h"
 
-int main(){
+int main()
+{
 	HashTable *hash = new HashTable(15);
 	Rubik *c = new Rubik();
 	hash->add(c);

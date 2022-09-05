@@ -1,11 +1,13 @@
 #include <iostream>
 #include "LinkedList.h"
 
-class HashTable{
+class HashTable
+{
 private:
     int length;
     LinkedList **table;
     int hashFunction(int key);
+
 public:
     HashTable(int maxLenght);
     ~HashTable();

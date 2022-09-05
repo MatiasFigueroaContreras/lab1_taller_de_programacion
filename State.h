@@ -1,8 +1,8 @@
 #include "Rubik.h"
 
-class State{
+class State
+{
 private:
-
 public:
     Rubik *cube;
     State *previous;

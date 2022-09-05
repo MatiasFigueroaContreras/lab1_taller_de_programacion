@@ -1,6 +1,7 @@
 #include "MinHeap.h"
 
-int main(){
+int main()
+{
 	Rubik *r = new Rubik();
 
 	r->print();

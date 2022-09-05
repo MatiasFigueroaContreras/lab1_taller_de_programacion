@@ -1,8 +1,9 @@
 #include "LinkedList.h"
 
-int main(){
+int main()
+{
     LinkedList *ll = new LinkedList();
-    
+
     Rubik *cube = new Rubik();
     ll->insert(cube, cube->getValue());
 

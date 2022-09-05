@@ -27,21 +27,24 @@
         partida.
     Retorno: La direccion del objeto creado.
 */
-Rubik::Rubik(){
-    U = new int*[3];
-    D = new int*[3]; 
-    L = new int*[3];
-    R = new int*[3];
-    F = new int*[3];
-    B = new int*[3];
-    for (int i = 0; i < 3; i++){
-        U[i] = new int [3];
-        D[i] = new int [3];
-        L[i] = new int [3];
-        R[i] = new int [3];
-        F[i] = new int [3];
-        B[i] = new int [3];
-        for (int j = 0; j < 3; j++){
+Rubik::Rubik()
+{
+    U = new int *[3];
+    D = new int *[3];
+    L = new int *[3];
+    R = new int *[3];
+    F = new int *[3];
+    B = new int *[3];
+    for (int i = 0; i < 3; i++)
+    {
+        U[i] = new int[3];
+        D[i] = new int[3];
+        L[i] = new int[3];
+        R[i] = new int[3];
+        F[i] = new int[3];
+        B[i] = new int[3];
+        for (int j = 0; j < 3; j++)
+        {
             U[i][j] = YELLOW;
             D[i][j] = WHITE;
             L[i][j] = BLUE;
@@ -59,8 +62,10 @@ Rubik::Rubik(){
         valores de este.
     Retorno: vacio.
 */
-Rubik::~Rubik(){
-    for(int i = 0; i < 3; i++){
+Rubik::~Rubik()
+{
+    for (int i = 0; i < 3; i++)
+    {
         delete[] U[i];
         delete[] D[i];
         delete[] L[i];
@@ -85,13 +90,15 @@ Rubik::~Rubik(){
             el sentido del reloj, y -1 contra reloj.
     Retorno: cubo Rubik rotado.
 */
-Rubik *Rubik::rotate(int cw, char face){
+Rubik *Rubik::rotate(int cw, char face)
+{
     Rubik *cube = copy();
 
     int ***nFaces = new int **[4];
     int ***oFaces = new int **[4];
 
-    switch (face){
+    switch (face)
+    {
     case 'U':
         rotateFace(cw, cube->U, U);
         nFaces[0] = cube->F;
@@ -116,7 +123,7 @@ Rubik *Rubik::rotate(int cw, char face){
         oFaces[1] = R;
         oFaces[2] = B;
         oFaces[3] = L;
-        rotateAroundHorizontal(cw*-1, nFaces, oFaces, 2);
+        rotateAroundHorizontal(cw * -1, nFaces, oFaces, 2);
         break;
     case 'L':
         rotateFace(cw, cube->L, L);
@@ -174,8 +181,8 @@ Rubik *Rubik::rotate(int cw, char face){
         return nullptr;
         break;
     }
-    delete [] nFaces;
-    delete [] oFaces;
+    delete[] nFaces;
+    delete[] oFaces;
 
     return cube;
 }
@@ -194,11 +201,14 @@ Rubik *Rubik::rotate(int cw, char face){
             a la cara que se rotara.
     Retorno: vacio.
 */
-void Rubik::rotateFace(int cw, int **nface, int **oface){
+void Rubik::rotateFace(int cw, int **nface, int **oface)
+{
     int x = -1 * (cw - 1);
     int y = cw + 1;
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
             nface[x - i * (x - 1)][y - j * (y - 1)] = oface[j][i];
         }
     }
@@ -207,7 +217,7 @@ void Rubik::rotateFace(int cw, int **nface, int **oface){
 /*
     Metodo:
     Descripcion: este metodo rota los cubos alrededor de la
-        cara a rotar horizontalmente en un sentido dado, 
+        cara a rotar horizontalmente en un sentido dado,
         recibiendo las caras a cambiar y las caras antiguas,
         ademas de la posicion a rotar.
     Parametros:
@@ -221,18 +231,22 @@ void Rubik::rotateFace(int cw, int **nface, int **oface){
         -i: posicion de los cubos a rotar.
     Retorno: vacio.
 */
-void Rubik::rotateAroundHorizontal(int cw, int ***nFaces, int ***oFaces, int i){
-    //Valores para rotar en el sentido dado.
-    int x = (cw + 1)/2;
-    int y = (-1*cw + 1)/2;
-    for(int j = 0; j < 3; j++){
-        for(int k = 0; k < 3; k++){
+void Rubik::rotateAroundHorizontal(int cw, int ***nFaces, int ***oFaces, int i)
+{
+    // Valores para rotar en el sentido dado.
+    int x = (cw + 1) / 2;
+    int y = (-1 * cw + 1) / 2;
+    for (int j = 0; j < 3; j++)
+    {
+        for (int k = 0; k < 3; k++)
+        {
             nFaces[j + y][i][k] = oFaces[j + x][i][k];
         }
     }
 
-    for (int k = 0; k < 3; k++){
-        nFaces[3*x][i][k] = oFaces[3*y][i][k];
+    for (int k = 0; k < 3; k++)
+    {
+        nFaces[3 * x][i][k] = oFaces[3 * y][i][k];
     }
 }
 
@@ -253,19 +267,21 @@ void Rubik::rotateAroundHorizontal(int cw, int ***nFaces, int ***oFaces, int i){
         -i: posicion de los cubos a rotar.
     Retorno: vacio.
 */
-void Rubik::rotateAroundVertical(int cw, int ***nFaces, int ***oFaces, int i){
-    //Valores para rotar en el sentido dado, 
-    // y la posicion correcta de las caras
-    int z = 1 - i/2;
+void Rubik::rotateAroundVertical(int cw, int ***nFaces, int ***oFaces, int i)
+{
+    // Valores para rotar en el sentido dado,
+    //  y la posicion correcta de las caras
+    int z = 1 - i / 2;
     int p = (-1 * cw + 1) / 2;
     int t = (cw + 1) / 2;
     int x = p + z * cw;
     int y = t - z * cw;
 
-    for (int k = 0; k < 3; k++){
+    for (int k = 0; k < 3; k++)
+    {
         nFaces[y][k][i] = oFaces[x][k][i];
-        nFaces[y + 1][k][i*z + 2*p] = oFaces[x + 1][2 - k][i*z + 2*t];
-        nFaces[y + 2][k][i*z + 2*t] = oFaces[x + 2][2 - k][i*z + 2*p];
+        nFaces[y + 1][k][i * z + 2 * p] = oFaces[x + 1][2 - k][i * z + 2 * t];
+        nFaces[y + 2][k][i * z + 2 * t] = oFaces[x + 2][2 - k][i * z + 2 * p];
         nFaces[3 * x][k][i] = oFaces[3 * y][k][i];
     }
 }
@@ -273,7 +289,7 @@ void Rubik::rotateAroundVertical(int cw, int ***nFaces, int ***oFaces, int i){
 /*
     Metodo:
     Descripcion: este metodo rota los cubos alrededor de la
-        cara frontal en un sentido dado, recibiendo las caras 
+        cara frontal en un sentido dado, recibiendo las caras
         a cambiar y las caras antiguas, ademas de la posicion a rotar.
     Parametros:
         -cw: sentido de la rotacion, en donde 1 es en
@@ -286,15 +302,17 @@ void Rubik::rotateAroundVertical(int cw, int ***nFaces, int ***oFaces, int i){
         -i: posicion de los cubos a rotar.
     Retorno: vacio.
 */
-void Rubik::rotateAroundFrontal(int cw, int ***nFaces, int ***oFaces){
+void Rubik::rotateAroundFrontal(int cw, int ***nFaces, int ***oFaces)
+{
     int x = (cw + 1) / 2;
     int y = (-1 * cw + 1) / 2;
 
-    for (int k = 0; k < 3; k++){
-        nFaces[x][2*y+k*x][k*y] = oFaces[y][2*x+k*y][k*x];
-        nFaces[x + 1][(2-k)*y][k*x] = oFaces[y + 1][(2-k)*x][k*y];
-        nFaces[x + 2][k*x][2*x+k*y] = oFaces[y + 2][k*y][2*y+k*x];
-        nFaces[3 * y][2*x+k*y][2*y+(2-k)*x] = oFaces[3 * x][2*y+k*x][2*x+(2-k)*y];
+    for (int k = 0; k < 3; k++)
+    {
+        nFaces[x][2 * y + k * x][k * y] = oFaces[y][2 * x + k * y][k * x];
+        nFaces[x + 1][(2 - k) * y][k * x] = oFaces[y + 1][(2 - k) * x][k * y];
+        nFaces[x + 2][k * x][2 * x + k * y] = oFaces[y + 2][k * y][2 * y + k * x];
+        nFaces[3 * y][2 * x + k * y][2 * y + (2 - k) * x] = oFaces[3 * x][2 * y + k * x][2 * x + (2 - k) * y];
     }
 }
 
@@ -314,15 +332,17 @@ void Rubik::rotateAroundFrontal(int cw, int ***nFaces, int ***oFaces){
         -i: posicion de los cubos a rotar.
     Retorno: vacio.
 */
-void Rubik::rotateAroundBack(int cw, int ***nFaces, int ***oFaces){
+void Rubik::rotateAroundBack(int cw, int ***nFaces, int ***oFaces)
+{
     int x = (cw + 1) / 2;
     int y = (-1 * cw + 1) / 2;
 
-    for (int k = 0; k < 3; k++){
-        nFaces[y][k*y][2*y+k*x] = oFaces[x][k*x][2*x+k*y];
-        nFaces[y + 1][2*y+(2-k)*x][2*x+k*y] = oFaces[x + 1][2*x+(2-k)*y][2*y+k*x];
-        nFaces[y + 2][k*y+2*x][k*x] = oFaces[x + 2][k*x+2*y][k*y];
-        nFaces[3 * x][k*x][(2-k)*y] = oFaces[3 * y][k*y][(2-k)*x];
+    for (int k = 0; k < 3; k++)
+    {
+        nFaces[y][k * y][2 * y + k * x] = oFaces[x][k * x][2 * x + k * y];
+        nFaces[y + 1][2 * y + (2 - k) * x][2 * x + k * y] = oFaces[x + 1][2 * x + (2 - k) * y][2 * y + k * x];
+        nFaces[y + 2][k * y + 2 * x][k * x] = oFaces[x + 2][k * x + 2 * y][k * y];
+        nFaces[3 * x][k * x][(2 - k) * y] = oFaces[3 * y][k * y][(2 - k) * x];
     }
 }
 
@@ -332,7 +352,8 @@ void Rubik::rotateAroundBack(int cw, int ***nFaces, int ***oFaces){
         aleatoria, aplicando 1000 movimientos.
     Retorno: vacio.
 */
-void Rubik::disarm(){
+void Rubik::disarm()
+{
     int randFace, randCw;
     Rubik *temp;
     Rubik *dCube = copy();
@@ -340,7 +361,8 @@ void Rubik::disarm(){
     int cws[2] = {1, -1};
 
     std::srand(time(NULL));
-    for(int i = 0; i < 1000; i++){
+    for (int i = 0; i < 1000; i++)
+    {
         temp = dCube;
         randFace = std::rand() % 6;
         randCw = std::rand() % 2;
@@ -360,10 +382,13 @@ void Rubik::disarm(){
     Descripcion: este metodo permite copiar el cubo
     Retorno: la copia del cubo Rubik.
 */
-Rubik *Rubik::copy(){
+Rubik *Rubik::copy()
+{
     Rubik *cube = new Rubik();
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
             cube->U[i][j] = U[i][j];
             cube->D[i][j] = D[i][j];
             cube->L[i][j] = L[i][j];
@@ -381,10 +406,13 @@ Rubik *Rubik::copy(){
         entero que representa al cubo.
     Retorno: entero que representa al cubo.
 */
-int Rubik::getValue(){
+int Rubik::getValue()
+{
     int u = 0, d = 0, l = 0, r = 0, f = 0, b = 0;
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
             u += U[i][j];
             d += D[i][j];
             l += L[i][j];
@@ -403,7 +431,8 @@ int Rubik::getValue(){
         de este.
     Retorno: vacio.
 */
-void Rubik::print(){
+void Rubik::print()
+{
     std::cout << "--- UP FACE ---" << std::endl;
     printFace(U);
     std::cout << "--- DOWN FACE ---" << std::endl;
@@ -421,15 +450,19 @@ void Rubik::print(){
 
 /*
     Metodo:
-    Descripcion: este metodo imprime por consola una 
+    Descripcion: este metodo imprime por consola una
         cara dada del cubo Rubik.
     Retorno: vacio.
 */
-void Rubik::printFace(int **face){
-    for (int i = 0; i < 3; i++){
+void Rubik::printFace(int **face)
+{
+    for (int i = 0; i < 3; i++)
+    {
         std::cout << "   ";
-        for (int j = 0; j < 3; j++){
-            std::cout << "\033[1;" << face[i][j] << "m[=]\033[0m" << " ";
+        for (int j = 0; j < 3; j++)
+        {
+            std::cout << "\033[1;" << face[i][j] << "m[=]\033[0m"
+                      << " ";
         }
         std::cout << std::endl;
     }
@@ -444,15 +477,19 @@ void Rubik::printFace(int **face){
         -true: si el cubo esta resuelto.
         -false: si el cubo no esta resuelto.
 */
-bool Rubik::isSolved(){
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
-            if (U[i][j] != 33 || 
+bool Rubik::isSolved()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (U[i][j] != 33 ||
                 D[i][j] != 37 ||
                 L[i][j] != 34 ||
                 R[i][j] != 32 ||
                 F[i][j] != 31 ||
-                B[i][j] != 35){
+                B[i][j] != 35)
+            {
                 return false;
             }
         }
@@ -470,15 +507,19 @@ bool Rubik::isSolved(){
         -true: si los cubos son iguales.
         -false: si los cubos no son iguales.
 */
-bool Rubik::equals(Rubik *r){
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
+bool Rubik::equals(Rubik *r)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
             if (U[i][j] != r->U[i][j] ||
                 D[i][j] != r->D[i][j] ||
                 L[i][j] != r->L[i][j] ||
                 R[i][j] != r->R[i][j] ||
                 F[i][j] != r->F[i][j] ||
-                B[i][j] != r->B[i][j]){
+                B[i][j] != r->B[i][j])
+            {
                 return false;
             }
         }

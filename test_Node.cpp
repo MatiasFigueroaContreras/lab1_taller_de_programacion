@@ -1,6 +1,7 @@
 #include "Node.h"
 
-int main(){
+int main()
+{
     Rubik *cube = new Rubik();
     Node *n1 = new Node(cube, 3);
     Node *n2 = new Node(cube->rotate(-1, 'D'), 15);

@@ -1,8 +1,10 @@
 #include "Node.h"
 
-class LinkedList{
+class LinkedList
+{
 private:
     Node *head;
+
 public:
     LinkedList();
     ~LinkedList();

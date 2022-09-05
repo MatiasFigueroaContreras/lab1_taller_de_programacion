@@ -25,7 +25,8 @@
         -clockWise: sentido del movimiento realizado.
     Retorno: La direccion del objeto creado.
 */
-State::State(Rubik *cube, State *previous, int depth, char move, int clockWise){
+State::State(Rubik *cube, State *previous, int depth, char move, int clockWise)
+{
     this->cube = cube;
     this->previous = previous;
     this->depth = depth;
@@ -33,20 +34,23 @@ State::State(Rubik *cube, State *previous, int depth, char move, int clockWise){
     this->cw = clockWise;
 }
 
-State::~State(){
-
+State::~State()
+{
 }
 
 /*
-    Metodo: 
-    Descripcion: este metodo permite imprimir por consola 
+    Metodo:
+    Descripcion: este metodo permite imprimir por consola
         los movimientos necesarios para llegar al estado actual.
     Retorno: vacio.
 */
-void State::printPath(){
-    for(State *current = this; current != nullptr; current = current->previous){
+void State::printPath()
+{
+    for (State *current = this; current != nullptr; current = current->previous)
+    {
         std::cout << current->move;
-        if(current->cw == -1){
+        if (current->cw == -1)
+        {
             std::cout << "'";
         }
         std::cout << std::endl;

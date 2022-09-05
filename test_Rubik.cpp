@@ -1,6 +1,7 @@
 #include "Rubik.h"
 
-int main(){
+int main()
+{
     Rubik *cube = new Rubik();
     cube->print();
     Rubik *cube2 = cube->rotate(1, 'U');

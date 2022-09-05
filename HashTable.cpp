@@ -17,9 +17,11 @@
         -maxLenght: largo maximo que tendra la tabla de hash.
     Retorno: La direccion del objeto creado.
 */
-HashTable::HashTable(int maxLenght){
+HashTable::HashTable(int maxLenght)
+{
     table = (LinkedList **)malloc(maxLenght * sizeof(LinkedList *));
-    for (int i = 0; i < maxLenght; i++){
+    for (int i = 0; i < maxLenght; i++)
+    {
         table[i] = new LinkedList();
     }
     length = maxLenght;
@@ -31,15 +33,17 @@ HashTable::HashTable(int maxLenght){
         liberando la memoria en donde se encuentra esta.
     Retorno: vacio.
 */
-HashTable::~HashTable(){
-    for (int i = 0; i < length; i++){
+HashTable::~HashTable()
+{
+    for (int i = 0; i < length; i++)
+    {
         delete table[i];
     }
     free(table);
 }
 
 /*
-    Metodo: 
+    Metodo:
     Descripcion: este metodo calcula la posicion en la tabla,
         de hash en base a una llave.
     Parametros:
@@ -47,7 +51,8 @@ HashTable::~HashTable(){
             en la tabla de hash.
     Retorno: posicion en la table de hash.
 */
-int HashTable::hashFunction(int key){
+int HashTable::hashFunction(int key)
+{
     return key % length;
 }
 
@@ -59,7 +64,8 @@ int HashTable::hashFunction(int key){
         -cube: cubo a ser agregado a la tabla de hash.
     Retorno: vacio.
 */
-void HashTable::add(Rubik *cube){
+void HashTable::add(Rubik *cube)
+{
     int code = cube->getValue();
     int i = hashFunction(code);
     table[i]->insert(cube, code);
@@ -75,7 +81,8 @@ void HashTable::add(Rubik *cube){
         -true: si el cubo esta en la tabla de hash.
         -false: si el cubo no esta en la tabla de hash.
 */
-bool HashTable::isInTable(Rubik *cube){
+bool HashTable::isInTable(Rubik *cube)
+{
     int code = cube->getValue();
     int i = hashFunction(code);
     return table[i]->isInList(cube, code);

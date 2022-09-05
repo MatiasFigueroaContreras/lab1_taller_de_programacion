@@ -1,6 +1,7 @@
 #include "RubikSolver.h"
 
-int main(){
+int main()
+{
     RubikSolver *rs = new RubikSolver();
 
     Rubik *cube = new Rubik();
