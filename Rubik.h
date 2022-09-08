@@ -1,7 +1,6 @@
 #ifndef RUBIK_H
 #define RUBIK_H
 #include <iostream>
-
 #define YELLOW 33;
 #define WHITE 37;
 #define BLUE 34;

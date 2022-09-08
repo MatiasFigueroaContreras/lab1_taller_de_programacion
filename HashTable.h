@@ -1,4 +1,3 @@
-#include <iostream>
 #include "LinkedList.h"
 
 class HashTable
