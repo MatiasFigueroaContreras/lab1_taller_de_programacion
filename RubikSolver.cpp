@@ -103,6 +103,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
                     {
                         neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
                         int h = heuristicValue(neighborCube, step);
+                        // std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl; 
                         open->insert(current->depth + 1 + h, neighborState);
                         openHash->add(neighborCube);
                     }
@@ -205,7 +206,7 @@ int RubikSolver::heuristicValue(Rubik *cube, int step)
         return whiteCrossHeuristic(cube);
         break;
     case 2:
-        return 0;
+        return whiteCrossHeuristic(cube) + whiteCompleteHeuristic(cube);
         break;
     case 3:
         return 0;
@@ -265,7 +266,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
     {
         if (mFaces[k][0][1] == 37)
         {
-            j = getIndex(colors, facesH[0][2-2*k][1]);
+            j = getIndex(colors, facesH[0][2 - 2 * k][1]);
             dist = distance(0, j);
             value += dist + 2 * k;
             count--;
@@ -295,6 +296,185 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
             count--;
         }
     }
+
+    delete[] facesH;
+    delete[] mFaces;
+
+    return value;
+}
+
+int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
+{
+    int left, right, dist, color, colorFace;
+    int value = 0;
+    int count = 4;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {31, 32, 35, 34};
+    for (int k = 0; k < 4 && count != 0; k++)
+    {
+        if (facesH[k][0][0] == 37)
+        {
+            left = leftFaceIndex(k);
+            color = facesH[left][0][2];
+            colorFace = getIndex(colors, color);
+            right = rightFaceIndex(colorFace);
+            value += distance(left, colorFace);
+            if(facesH[colorFace][1][2] != color || facesH[right][1][0] != 37){
+                // Si el valor del borde no esta en la posicion que permite
+                //  colocar la esquina en su posicion, entonces la cantidad
+                //  estimada a subir de movimientos es 3 + la distancia.
+                value += 3;
+            }
+            count--;
+        }
+
+        if (facesH[k][0][2] == 37)
+        {
+            right = rightFaceIndex(k);
+            color = facesH[right][0][0];
+            colorFace = getIndex(colors, color);
+            left = leftFaceIndex(colorFace);
+            value += distance(right, colorFace);
+            if (facesH[colorFace][1][0] != color || facesH[left][1][2] != 37)
+            {
+                // Si el valor del borde no esta en la posicion que permite
+                //  colocar la esquina en su posicion, entonces la cantidad
+                //  estimada a subir de movimientos es 3 + la distancia.
+                value += 3;
+            }
+            count--;
+        }
+
+        if (facesH[k][2][0] == 37)
+        {
+            left = leftFaceIndex(k);
+            color = facesH[left][2][2];
+            colorFace = getIndex(colors, color);
+            dist = distance(left, colorFace);
+            if(dist != 0 || facesH[colorFace][1][2] != color || facesH[k][1][0] != 37){
+                // Si el la esquina no esta en la posicion al lado del borde blanco
+                //  más su color, entonces tomara aproximadamente 7 movimientos
+                value += 7;
+            }
+            count--;
+        }
+
+        if (facesH[k][2][2] == 37)
+        {
+            right = rightFaceIndex(k);
+            color = facesH[right][2][0];
+            colorFace = getIndex(colors, color);
+            dist = distance(right, colorFace);
+            if (dist != 0 || facesH[colorFace][1][0] != color || facesH[k][1][2] != 37)
+            {
+                // Si el la esquina no esta en la posicion al lado del borde blanco
+                //  más su color, entonces tomara aproximadamente 7 movimientos
+                value += 7;
+            }
+            count--;
+        }
+    }
+
+    if (count != 0 && cube->U[0][0] == 37)
+    {
+        color = facesH[2][0][2];
+        colorFace = getIndex(colors, color);
+        dist = distance(2, colorFace);
+        value += 7;
+        if (dist == 1)
+        {
+            value += 1;
+        }
+        count--;
+    }
+    if (count != 0 && cube->U[0][2] == 37)
+    {
+        color = facesH[2][0][0];
+        colorFace = getIndex(colors, color);
+        dist = distance(2, colorFace);
+        value += 7;
+        if (dist == 1)
+        {
+            value += 1;
+        }
+        count--;
+    }
+    if (count != 0 && cube->U[2][0] == 37)
+    {
+        color = facesH[0][0][0];
+        colorFace = getIndex(colors, color);
+        dist = distance(0, colorFace);
+        value += 7;
+        if (dist == 1)
+        {
+            value += 1;
+        }
+        count--;
+    }
+    if (count != 0 && cube->U[2][2] == 37)
+    {
+        color = facesH[0][0][0];
+        colorFace = getIndex(colors, color);
+        dist = distance(0, colorFace);
+        value += 7;
+        if (dist == 1)
+        {
+            value += 1;
+        }
+        count--;
+    }
+
+    if (count != 0 && cube->D[0][0] == 37)
+    {
+        color = facesH[0][2][0];
+        colorFace = getIndex(colors, color);
+        dist = distance(0, colorFace);
+        if(dist != 0 || cube->D[0][1] != 37 || facesH[0][2][1] != color){
+            // Si la esquina no esta en su lugar
+            value += dist + 5;
+        }
+        count--;
+    }
+    if (count != 0 && cube->D[0][2] == 37)
+    {
+        color = facesH[0][2][2];
+        colorFace = getIndex(colors, color);
+        dist = distance(0, colorFace);
+        if (dist != 0 || cube->D[0][1] != 37 || facesH[0][2][1] != color)
+        {
+            // Si la esquina no esta en su lugar
+            value += dist + 5;
+        }
+    }
+    if (count != 0 && cube->D[2][0] == 37)
+    {
+        color = facesH[2][2][2];
+        colorFace = getIndex(colors, color);
+        dist = distance(2, colorFace);
+        if (dist != 0 || cube->D[2][1] != 37 || facesH[2][2][1] != color)
+        {
+            // Si la esquina no esta en su lugar
+            value += dist + 5;
+        }
+    }
+    if (count != 0 && cube->D[2][2] == 37)
+    {
+        color = facesH[2][2][0];
+        colorFace = getIndex(colors, color);
+        dist = distance(2, colorFace);
+        if (dist != 0 || cube->D[2][1] != 37 || facesH[2][2][1] != color)
+        {
+            // Si la esquina no esta en su lugar
+            value += dist + 5;
+        }
+    }
+    delete[] facesH;
 
     return value;
 }

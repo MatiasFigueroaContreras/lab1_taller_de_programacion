@@ -11,6 +11,8 @@ private:
     bool yellowCross(Rubik *cube);
 
     int whiteCrossHeuristic(Rubik *cube);
+    int whiteCompleteHeuristic(Rubik *cube);
+    int middleCompleteHeuristic(Rubik *cube);
     int getIndex(int arr[4], int val);
     int leftFaceIndex(int i);
     int rightFaceIndex(int i);

@@ -22,7 +22,7 @@ int main()
     State *o = rs->partialSolve(starting, 1);
     o->printPath();
     o->cube->print();
-    // State *o2 = rs->partialSolve(o, 2);
-    // o2->printPath();
-    // o2->cube->print();
+    State *o2 = rs->partialSolve(o, 2);
+    o2->printPath();
+    o2->cube->print();
 }
