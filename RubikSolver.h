@@ -9,6 +9,7 @@ private:
     bool whiteComplete(Rubik *cube);
     bool middleComplete(Rubik *cube);
     bool yellowCross(Rubik *cube);
+    bool correctYellowCross(Rubik *cube);
 
     int whiteCrossHeuristic(Rubik *cube);
     int whiteCompleteHeuristic(Rubik *cube);
