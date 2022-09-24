@@ -87,6 +87,9 @@ State *RubikSolver::partialSolve(State *startingState, int step)
 
         if (stopPoint(current->cube, step))
         {
+            delete open;
+            delete openHash;
+            delete closed;
             return current;
         }
 
@@ -103,7 +106,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
                     {
                         neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
                         int h = heuristicValue(neighborCube, step);
-                        // std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl;
+                        std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl;
                         open->insert(current->depth + 1 + h, neighborState);
                         openHash->add(neighborCube);
                     }
@@ -117,6 +120,9 @@ State *RubikSolver::partialSolve(State *startingState, int step)
         closed->add(current->cube);
     }
 
+    delete open;
+    delete openHash;
+    delete closed;
     return nullptr;
 }
 
@@ -132,8 +138,13 @@ bool RubikSolver::stopPoint(Rubik *cube, int step)
         break;
     case 3:
         return middleComplete(cube) && whiteComplete(cube);
+        break;
     case 4:
         return middleComplete(cube) && whiteComplete(cube) && yellowCross(cube);
+        break;
+    case 5:
+        return middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        break;
     default:
         return false;
         break;
@@ -222,8 +233,13 @@ int RubikSolver::heuristicValue(Rubik *cube, int step)
         break;
     case 3:
         return middleCompleteHeuristic(cube);
+        break;
     case 4:
-        return 0;
+        return yellowCrossHeuristic(cube);
+        break;
+    case 5:
+        return correctYellowCrossHeuristic(cube);
+        break;
     default:
         return 0;
         break;
@@ -527,18 +543,18 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
                 //  consultando esta rotada (sin el color blanco en la posicion correcta)
                 //  entonces tomara 7 movimientos aproximadamente dejarlo en su lugar.
                 value += 7;
-                std::cout << "+7 en borde (1, 0) " << k << std::endl;
+                // std::cout << "+7 en borde (1, 0) " << k << std::endl;
             }
             else if (facesH[k][1][0] != color ||
                      facesH[left][1][2] != facesH[left][1][1])
             {
                 // Si el borde no esta posicionado correctamente, entonces toma
-                //  aproximadamente 14 movimientos llevarlo a su lugar.
-                value += 14;
-                std::cout << "+14 en borde (1, 0) " << k << std::endl;
+                //  aproximadamente 16 movimientos llevarlo a su lugar.
+                value += 16;
+                // std::cout << "+14 en borde (1, 0) " << k << std::endl;
             }
             // En otro caso el borde esta en la posicion correcta.
-            std::cout << "+0 en borde (1, 0) " << k << std::endl;
+            // std::cout << "+0 en borde (1, 0) " << k << std::endl;
             count--;
         }
 
@@ -555,18 +571,18 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
                 //  consultando esta rotada (sin el color blanco en la posicion correcta)
                 //  entonces tomara 7 movimientos aproximadamente dejarlo en su lugar.
                 value += 7;
-                std::cout << "+7 en borde (1, 2) " << k << std::endl;
+                // std::cout << "+7 en borde (1, 2) " << k << std::endl;
             }
             else if (facesH[k][1][2] != color ||
                      facesH[right][1][0] != facesH[right][1][1])
             {
                 // Si el borde no esta posicionado correctamente, entonces toma
-                //  aproximadamente 14 movimientos llevarlo a su lugar.
-                value += 14;
-                std::cout << "+14 en borde (1, 2) " << k << std::endl;
+                //  aproximadamente 16 movimientos llevarlo a su lugar.
+                value += 16;
+                // std::cout << "+14 en borde (1, 2) " << k << std::endl;
             }
             // En otro caso el borde esta en la posicion correcta.
-            std::cout << "+0 en borde (1, 2) " << k << std::endl;
+            // std::cout << "+0 en borde (1, 2) " << k << std::endl;
             count--;
         }
     }
@@ -612,34 +628,34 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
         {
             if (facesH[useFace][1][3 - useFace] == 37)
             {
-                value += 13;
+                value += 15;
             }
             else if (facesH[edgeFace][1][3 - useFace] == 37)
             {
-                value += 12;
+                value += 14;
             }
             else if (facesH[edgeFace][0][useFace - 1] == facesH[edgeFace][1][1])
             {
-                value += 10;
+                value += 12;
             }
             else
             {
-                value += 11;
+                value += 13;
             }
+        }
+        else if (useFace2 != -1 &&
+                 facesH[oppFace][0][3 - useFace2] != facesH[oppFace][0][1] &&
+                 cube->U[2][1] != cube->U[2][3 - useFace2] &&
+                 facesH[oppFace][1][3 - useFace2] == facesH[oppFace][1][1] &&
+                 facesH[useFace2][1][useFace2 - 1] == 37)
+        {
+            value += 10;
         }
         else if (useFace2 != -1 &&
                  facesH[oppFace][0][3 - useFace2] != facesH[oppFace][0][1] &&
                  cube->U[2][1] != cube->U[2][3 - useFace2])
         {
-            if (facesH[oppFace][1][3 - useFace2] == facesH[oppFace][1][1] &&
-                facesH[useFace2][1][useFace2 - 1] == 37)
-            {
-                value += 8;
-            }
-            else
-            {
-                value += 9;
-            }
+            value += 11;
         }
         else if (oppFace == upColorFace)
         {
@@ -695,7 +711,7 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             value += 9 - dist;
         }
     }
-    std::cout << "+" << value - prueba << " en UP (0, 1)" << std::endl;
+    // std::cout << "+" << value - prueba << " en UP (0, 1)" << std::endl;
 
     edgeFace = 3; // Cara trasera, la cual es parte del cubito del borde a revisar.
     upColor = cube->U[1][0];
@@ -737,34 +753,34 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
         {
             if (facesH[useFace][1][useFace] == 37)
             {
-                value += 13;
+                value += 15;
             }
             else if (facesH[edgeFace][1][useFace] == 37)
             {
-                value += 12;
+                value += 14;
             }
             else if (facesH[edgeFace][0][2 - useFace] == facesH[edgeFace][1][1])
             {
-                value += 10;
+                value += 12;
             }
             else
             {
-                value += 11;
+                value += 13;
             }
+        }
+        else if (useFace2 != -1 &&
+                 facesH[oppFace][0][useFace2] != facesH[oppFace][0][1] &&
+                 cube->U[1][2] != cube->U[2 - useFace2][2] &&
+                 facesH[oppFace][1][useFace2] == facesH[oppFace][1][1] &&
+                 facesH[useFace2][1][2 - useFace2] == 37)
+        {
+            value += 10;
         }
         else if (useFace2 != -1 &&
                  facesH[oppFace][0][useFace2] != facesH[oppFace][0][1] &&
                  cube->U[1][2] != cube->U[2 - useFace2][2])
         {
-            if (facesH[oppFace][1][useFace2] == facesH[oppFace][1][1] &&
-                facesH[useFace2][1][2 - useFace2] == 37)
-            {
-                value += 8;
-            }
-            else
-            {
-                value += 9;
-            }
+            value += 11;
         }
         else if (oppFace == upColorFace)
         {
@@ -820,7 +836,7 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             value += 9 - dist;
         }
     }
-    std::cout << "+" << value - prueba << " en UP (1, 0)" << std::endl;
+    // std::cout << "+" << value - prueba << " en UP (1, 0)" << std::endl;
 
     edgeFace = 0; // Cara trasera, la cual es parte del cubito del borde a revisar.
     upColor = cube->U[2][1];
@@ -862,19 +878,19 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
         {
             if (facesH[useFace][1][useFace - 1] == 37)
             {
-                value += 13;
+                value += 15;
             }
             else if (facesH[edgeFace][1][useFace - 1] == 37)
             {
-                value += 12;
+                value += 14;
             }
             else if (facesH[edgeFace][0][3 - useFace] == facesH[edgeFace][1][1])
             {
-                value += 10;
+                value += 12;
             }
             else
             {
-                value += 11;
+                value += 13;
             }
         }
         else if (useFace2 != -1 &&
@@ -884,11 +900,11 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             if (facesH[oppFace][1][useFace2 - 1] == facesH[oppFace][1][1] &&
                 facesH[useFace2][1][3 - useFace2] == 37)
             {
-                value += 8;
+                value += 10;
             }
             else
             {
-                value += 9;
+                value += 11;
             }
         }
         else if (oppFace == upColorFace)
@@ -945,7 +961,7 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             value += 9 - dist;
         }
     }
-    std::cout << "+" << value - prueba << " en UP (2, 1)" << std::endl;
+    // std::cout << "+" << value - prueba << " en UP (2, 1)" << std::endl;
 
     edgeFace = 1; // Cara trasera, la cual es parte del cubito del borde a revisar.
     upColor = cube->U[1][2];
@@ -987,19 +1003,19 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
         {
             if (facesH[useFace][1][2 - useFace] == 37)
             {
-                value += 13;
+                value += 15;
             }
             else if (facesH[edgeFace][1][2 - useFace] == 37)
             {
-                value += 12;
+                value += 14;
             }
             else if (facesH[edgeFace][0][useFace] == facesH[edgeFace][1][1])
             {
-                value += 10;
+                value += 12;
             }
             else
             {
-                value += 11;
+                value += 13;
             }
         }
         else if (useFace2 != -1 &&
@@ -1009,11 +1025,11 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             if (facesH[oppFace][1][2 - useFace2] == facesH[oppFace][1][1] &&
                 facesH[useFace2][1][useFace2] == 37)
             {
-                value += 8;
+                value += 10;
             }
             else
             {
-                value += 9;
+                value += 11;
             }
         }
         else if (oppFace == upColorFace)
@@ -1070,7 +1086,7 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             value += 9 - dist;
         }
     }
-    std::cout << "+" << value - prueba << " en UP (1, 2)" << std::endl;
+    // std::cout << "+" << value - prueba << " en UP (1, 2)" << std::endl;
 
     edgeFace = 0;
     color = cube->D[0][1];
@@ -1091,10 +1107,10 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             facesH[oppFace][1][3 - colorFace] != 37)
         {
             // Entra si el cubito del borde no esta posicionado correctamente
-            value += 14;
-            std::cout << "+14 en D (0, 1)" << std::endl;
+            value += 16;
+            // std::cout << "+14 en D (0, 1)" << std::endl;
         }
-        std::cout << "+0 en D (0, 1)" << std::endl;
+        // std::cout << "+0 en D (0, 1)" << std::endl;
     }
 
     edgeFace = 3;
@@ -1116,10 +1132,10 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             facesH[oppFace][1][2 - colorFace] != 37)
         {
             // Entra si el cubito del borde no esta posicionado correctamente
-            value += 14;
-            std::cout << "+14 en D (1, 0)" << std::endl;
+            value += 16;
+            // std::cout << "+14 en D (1, 0)" << std::endl;
         }
-        std::cout << "+0 en D (1, 0)" << std::endl;
+        // std::cout << "+0 en D (1, 0)" << std::endl;
     }
 
     edgeFace = 2;
@@ -1141,10 +1157,10 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             facesH[oppFace][1][colorFace - 1] != 37)
         {
             // Entra si el cubito del borde no esta posicionado correctamente
-            value += 14;
-            std::cout << "+14 en D (2, 1)" << std::endl;
+            value += 16;
+            // std::cout << "+14 en D (2, 1)" << std::endl;
         }
-        std::cout << "+0 en D (2, 1)" << std::endl;
+        // std::cout << "+0 en D (2, 1)" << std::endl;
     }
 
     edgeFace = 1;
@@ -1166,14 +1182,325 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
             facesH[oppFace][1][colorFace] != 37)
         {
             // Entra si el cubito del borde no esta posicionado correctamente
-            value += 14;
-            std::cout << "+14 en D (1, 2)" << std::endl;
+            value += 16;
+            // std::cout << "+14 en D (1, 2)" << std::endl;
         }
-        std::cout << "+0 en D (1, 2)" << std::endl;
+        // std::cout << "+0 en D (1, 2)" << std::endl;
     }
 
     delete[] facesH;
     return value;
+}
+
+int RubikSolver::yellowCrossHeuristic(Rubik *cube)
+{
+    int left, right, opp, face;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {31, 32, 35, 34};
+
+    if (stopPoint(cube, 4))
+    {
+        return 0;
+    }
+
+    if (face = yellowLineForm(cube); face != -1)
+    {
+        left = leftFaceIndex(face);
+        right = rightFaceIndex(face);
+        opp = leftFaceIndex(left);
+        if (facesH[right][0][0] == WHITE &&
+            facesH[right][1][0] == WHITE &&
+            facesH[right][2][0] == WHITE)
+        {
+            if (facesH[face][1][0] == WHITE &&
+                facesH[face][2][0] == WHITE)
+            {
+                return 4;
+            }
+            else if (cube->U[2][1] == YELLOW && cube->U[1][2] == YELLOW)
+            {
+                return 1;
+            }
+            else
+            {
+                return 5;
+            }
+        }
+        else if (facesH[opp * (3 - face) + face * (face - 2)][1][0] == WHITE &&
+                 facesH[opp * (3 - face) + face * (face - 2)][2][0] == WHITE &&
+                 facesH[left * (3 - face) + right * (face - 2)][0][0] == WHITE)
+        {
+            if (facesH[right * (3 - face) + left * (face - 2)][1][0] == WHITE &&
+                facesH[right * (3 - face) + left * (face - 2)][2][0] == WHITE)
+            {
+                return 3;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+        else if (whiteComplete(cube))
+        {
+            return 6;
+        }
+        else
+        {
+            return 36;
+        }
+    }
+    else if (face = yellowSeatedForm(cube); face != -1)
+    {
+        left = leftFaceIndex(face);
+        right = rightFaceIndex(face);
+        opp = leftFaceIndex(left);
+        if (facesH[right][0][0] == WHITE &&
+            facesH[right][1][0] == WHITE &&
+            facesH[right][2][0] == WHITE)
+        {
+            if (facesH[face][1][0] == WHITE &&
+                facesH[face][2][0] == WHITE)
+            {
+                return 2;
+            }
+            else
+            {
+                return 5;
+            }
+        }
+        else if (facesH[face][1][0] == WHITE &&
+                 facesH[face][2][0] == WHITE &&
+                 facesH[right][0][0] == WHITE)
+        {
+            if (facesH[left][1][0] == WHITE &&
+                facesH[left][2][0] == WHITE)
+            {
+                return 3;
+            }
+            else
+            {
+                return 4;
+            }
+        }
+        else if (whiteComplete(cube))
+        {
+            return 6;
+        }
+        else
+        {
+            return 36;
+        }
+    }
+    else
+    {
+        face = 2;
+        left = leftFaceIndex(face);
+        right = rightFaceIndex(face);
+        opp = leftFaceIndex(left);
+        if (facesH[right][0][0] == WHITE &&
+            facesH[right][1][0] == WHITE &&
+            facesH[right][2][0] == WHITE)
+        {
+            if (facesH[face][1][0] == WHITE &&
+                facesH[face][2][0] == WHITE)
+            {
+                return 4;
+            }
+            else
+            {
+                return 5;
+            }
+        }
+        else if (facesH[right][1][0] == WHITE &&
+                 facesH[right][2][0] == WHITE &&
+                 facesH[opp][0][0] == WHITE)
+        {
+            if (facesH[face][1][0] == WHITE &&
+                facesH[face][2][0] == WHITE)
+            {
+                return 3;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+        else if (whiteComplete(cube))
+        {
+            return 12;
+        }
+        else
+        {
+            return 36;
+        }
+    }
+}
+
+int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
+{
+    int aux, left, right, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {31, 32, 35, 34};
+
+    whiteCornerFace = -1;
+    correctColors = 0;
+    count = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        if (facesH[i][0][0] == WHITE)
+        {
+            whiteCornerFace = i;
+            count++;
+        }
+
+        if (i < 3)
+        {
+            color = facesH[i][0][1];
+            colorFace = getIndex(colors, color);
+            color = facesH[i + 1][0][1];
+            aux = getIndex(colors, color);
+            if (rightFaceIndex(colorFace) == aux)
+            {
+                correctColors += 2;
+            }
+        }
+    }
+
+    correctColors = correctColors / 2 + 1;
+    if (correctColors == 4)
+    {
+        color = facesH[0][0][1];
+        colorFace = getIndex(colors, color);
+        dist = distance(colorFace, 0);
+        return dist;
+    }
+
+    if (whiteComplete(cube))
+    {
+        if (correctColors == 2)
+        {
+            return 10;
+        }
+        else
+        {
+            return 20;
+        }
+    }
+
+    if (whiteCornerFace != -1 && count == 1)
+    {
+        left = leftFaceIndex(whiteCornerFace);
+        color = facesH[left][0][2];
+        mateCornerFace = getIndex(colors, color);
+        whiteGoalFace = rightFaceIndex(mateCornerFace);
+        cornerSteps = distance(whiteCornerFace, whiteGoalFace);
+        if (whiteCornerFace == mateCornerFace)
+        {
+            cornerSteps = 3;
+        }
+
+        if (facesH[whiteGoalFace][1][0] == WHITE &&
+            facesH[whiteGoalFace][2][0] == WHITE)
+        {
+            if (cornerSteps == 0)
+            {
+                color = facesH[whiteGoalFace][0][1];
+                colorFace = getIndex(colors, color);
+                color = facesH[mateCornerFace][1][0];
+                aux = getIndex(colors, color);
+
+                if (correctColors == 3 || rightFaceIndex(aux) == colorFace)
+                {
+                    return 3;
+                }
+                else if (correctColors == 2)
+                {
+                    return 12;
+                }
+                else
+                {
+                    return 9;
+                }
+            }
+            else if (cornerSteps == 1)
+            {
+                return 8;
+            }
+            else if (cornerSteps == 2)
+            {
+                return 5;
+            }
+            else if (cornerSteps == 3)
+            {
+                return 4;
+            }
+        }
+        else
+        {
+            if (cornerSteps == 1)
+            {
+                return 7;
+            }
+            else if (cornerSteps == 2)
+            {
+                return 6;
+            }
+        }
+    }
+
+    return 40;
+}
+
+int RubikSolver::yellowLineForm(Rubik *cube)
+{
+    if (cube->U[1][0] == YELLOW && cube->U[1][2] == YELLOW)
+    {
+        return 2;
+    }
+
+    if (cube->U[0][1] == YELLOW && cube->U[2][1] == YELLOW)
+    {
+        return 3;
+    }
+
+    return -1;
+}
+
+int RubikSolver::yellowSeatedForm(Rubik *cube)
+{
+    if (cube->U[1][0] == YELLOW && cube->U[2][1] == YELLOW)
+    {
+        return 2;
+    }
+
+    if (cube->U[1][0] == YELLOW && cube->U[0][1] == YELLOW)
+    {
+        return 1;
+    }
+
+    if (cube->U[0][1] == YELLOW && cube->U[1][2] == YELLOW)
+    {
+        return 0;
+    }
+
+    if (cube->U[1][2] == YELLOW && cube->U[2][1] == YELLOW)
+    {
+        return 3;
+    }
+
+    return -1;
 }
 
 int RubikSolver::getIndex(int arr[4], int val)
