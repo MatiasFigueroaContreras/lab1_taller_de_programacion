@@ -106,7 +106,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
                     {
                         neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
                         int h = heuristicValue(neighborCube, step);
-                        std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl;
+                        // std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl;
                         open->insert(current->depth + 1 + h, neighborState);
                         openHash->add(neighborCube);
                     }
@@ -144,6 +144,12 @@ bool RubikSolver::stopPoint(Rubik *cube, int step)
         break;
     case 5:
         return middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        break;
+    case 6:
+        return wellPosYellowCorners(cube) && middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        break;
+    case 7:
+        return cube->isSolved();
         break;
     default:
         return false;
@@ -221,6 +227,32 @@ bool RubikSolver::correctYellowCross(Rubik *cube)
            cube->L[0][1] == 34;
 }
 
+bool RubikSolver::wellPosYellowCorners(Rubik *cube)
+{
+    int colors[4][4] = {
+        {YELLOW, BLUE, ORANGE, YELLOW},
+        {YELLOW, GREEN, ORANGE, YELLOW},
+        {YELLOW, BLUE, RED, YELLOW},
+        {YELLOW, RED, GREEN, YELLOW}};
+    int corners[4][3] = {
+        {cube->U[0][0], cube->B[0][2], cube->L[0][0]},
+        {cube->U[0][2], cube->B[0][0], cube->R[0][2]},
+        {cube->U[2][0], cube->F[0][0], cube->L[0][2]},
+        {cube->U[2][2], cube->F[0][2], cube->R[0][0]}};
+
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (getIndex(colors[i], corners[i][j]) == -1)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 int RubikSolver::heuristicValue(Rubik *cube, int step)
 {
     switch (step)
@@ -239,6 +271,12 @@ int RubikSolver::heuristicValue(Rubik *cube, int step)
         break;
     case 5:
         return correctYellowCrossHeuristic(cube);
+        break;
+    case 6:
+        return wellPosYellowCornersHeuristic(cube);
+        break;
+    case 7:
+        return toSolvedHeuristic(cube);
         break;
     default:
         return 0;
@@ -1379,17 +1417,17 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
     }
 
     correctColors = correctColors / 2 + 1;
-    if (correctColors == 4)
-    {
-        color = facesH[0][0][1];
-        colorFace = getIndex(colors, color);
-        dist = distance(colorFace, 0);
-        return dist;
-    }
 
     if (whiteComplete(cube))
     {
-        if (correctColors == 2)
+        if (correctColors == 4)
+        {
+            color = facesH[0][0][1];
+            colorFace = getIndex(colors, color);
+            dist = distance(colorFace, 0);
+            return dist;
+        }
+        else if (correctColors == 2)
         {
             return 10;
         }
@@ -1461,6 +1499,156 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
     }
 
     return 40;
+}
+
+int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
+{
+    int aux, left, right, dist, color, colorFace, correctCorners, whiteFormFace, extraH;
+    bool check;
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {31, 32, 35, 34};
+    int colorsToCheck[4][4] = {
+        {YELLOW, cube->B[0][1], cube->L[0][1], YELLOW},
+        {YELLOW, cube->B[0][1], cube->R[0][1], YELLOW},
+        {YELLOW, cube->F[0][1], cube->L[0][1], YELLOW},
+        {YELLOW, cube->F[0][1], cube->R[0][1], YELLOW}};
+    int corners[4][3] = {
+        {cube->U[0][0], cube->B[0][2], cube->L[0][0]},
+        {cube->U[0][2], cube->B[0][0], cube->R[0][2]},
+        {cube->U[2][0], cube->F[0][0], cube->L[0][2]},
+        {cube->U[2][2], cube->F[0][2], cube->R[0][0]}};
+
+    correctCorners = 0;
+    whiteFormFace = -1;
+    aux = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        check = true; 
+        for (int j = 0; j < 3; j++)
+        {
+            if(colorsToCheck[i][1] != colorsToCheck[i][2])
+            {
+                if (getIndex(colorsToCheck[i], corners[i][j]) == -1)
+                {
+                    check = false;                    
+                }
+            }
+        }
+        if(check)
+        {
+            correctCorners++;
+        }
+
+        if ((facesH[i][1][0] == WHITE &&
+             facesH[i][2][0] == WHITE) ||
+            (facesH[i][1][2] == WHITE &&
+             facesH[i][2][2] == WHITE))
+        {
+            whiteFormFace = i;
+            aux++;
+        }
+    }
+
+    if(aux != 1)
+    {
+        whiteFormFace = -1;
+    }
+
+    if (whiteComplete(cube))
+    {
+        if (correctCorners == 4)
+        {
+            color = facesH[0][0][1];
+            colorFace = getIndex(colors, color);
+            dist = distance(colorFace, 0);
+            return dist;
+        }
+        else if (correctCorners == 1)
+        {
+            return 19;
+        }
+        else
+        {
+            return 29;
+        }
+    }
+
+    if (whiteFormFace != -1)
+    {
+        left = leftFaceIndex(whiteFormFace);
+        right = rightFaceIndex(whiteFormFace);
+        extraH = 0;
+        if (correctCorners < 1)
+        {
+            extraH = 10;
+        }
+
+        if (facesH[whiteFormFace][0][2] == WHITE &&
+            facesH[whiteFormFace][1][2] == WHITE &&
+            facesH[whiteFormFace][2][2] == WHITE)
+        {
+            if (facesH[left][0][0] == WHITE &&
+                facesH[whiteFormFace][1][0] == WHITE &&
+                facesH[whiteFormFace][2][0] == WHITE)
+            {
+                return 15 + extraH;
+            }
+            else
+            {
+                return 18 + extraH;
+            }
+        }
+        else if (facesH[right][0][2] == WHITE &&
+                 facesH[whiteFormFace][1][2] == WHITE &&
+                 facesH[whiteFormFace][2][2] == WHITE)
+        {
+            if (facesH[whiteFormFace][0][0] == WHITE &&
+                facesH[whiteFormFace][1][0] == WHITE &&
+                facesH[whiteFormFace][2][0] == WHITE)
+            {
+                return 16 + extraH;
+            }
+            else
+            {
+                return 17 + extraH;
+            }
+        }
+        else if (facesH[whiteFormFace][1][0] == WHITE &&
+                 facesH[whiteFormFace][2][0] == WHITE)
+        {
+            if(facesH[left][0][0] == WHITE)
+            {
+                return 14 + extraH;
+            }
+            else if(facesH[whiteFormFace][0][0] == WHITE)
+            {
+                return 13 + extraH;
+            }
+        }
+    }
+
+    return 60;
+}
+
+int RubikSolver::toSolvedHeuristic(Rubik *cube)
+{
+    int left, right, dist, color, colorFace;
+    int value = 0;
+    int count = 4;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {31, 32, 35, 34};
+    
 }
 
 int RubikSolver::yellowLineForm(Rubik *cube)
