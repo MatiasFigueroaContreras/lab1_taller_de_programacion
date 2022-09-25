@@ -35,5 +35,6 @@ private:
     void rotateAroundFrontal(int cw, int ***nFaces, int ***oFaces);
     void rotateAroundBack(int cw, int ***nFaces, int ***oFaces);
     void printFace(int **face);
+    void printRow(int *row);
 };
 #endif

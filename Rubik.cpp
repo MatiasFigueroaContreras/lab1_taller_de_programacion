@@ -433,18 +433,17 @@ int Rubik::getValue()
 */
 void Rubik::print()
 {
-    std::cout << "--- UP FACE ---" << std::endl;
     printFace(U);
-    std::cout << "--- DOWN FACE ---" << std::endl;
+    for(int i = 0; i < 3; i++)
+    {
+        std::cout << " ";
+        printRow(L[i]);
+        printRow(F[i]);
+        printRow(R[i]);
+        printRow(B[i]);
+        std::cout << std::endl;
+    }
     printFace(D);
-    std::cout << "--- LEFT FACE ---" << std::endl;
-    printFace(L);
-    std::cout << "--- RIGHT FACE ---" << std::endl;
-    printFace(R);
-    std::cout << "--- FRONT FACE ---" << std::endl;
-    printFace(F);
-    std::cout << "--- BACK FACE ---" << std::endl;
-    printFace(B);
     std::cout << std::endl;
 }
 
@@ -458,15 +457,19 @@ void Rubik::printFace(int **face)
 {
     for (int i = 0; i < 3; i++)
     {
-        std::cout << "   ";
-        for (int j = 0; j < 3; j++)
-        {
-            std::cout << "\033[1;" << face[i][j] << "m[=]\033[0m"
-                      << " ";
-        }
+        std::cout << "             ";
+        printRow(face[i]);
         std::cout << std::endl;
     }
-    std::cout << std::endl;
+}
+
+void Rubik::printRow(int *row)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << "\033[1;" << row[i] << "m[=]\033[0m"
+                  << " ";
+    }
 }
 
 /*
