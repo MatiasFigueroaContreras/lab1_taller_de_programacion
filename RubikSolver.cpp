@@ -24,48 +24,18 @@ RubikSolver::~RubikSolver()
 */
 void RubikSolver::solve(Rubik *startingCube)
 {
-    State *current, *neighborState;
-    char faces[6] = {'U', 'D', 'L', 'R', 'F', 'B'};
-    int cws[2] = {1, -1};               // Sentidos del reloj para los movimientos.
-    MinHeap *open = new MinHeap(10000); // Heap del cual se obtendran los estados de cubo Rubik más cercanos a la solucion.
-    HashTable *openHash = new HashTable(100000);
-    HashTable *closed = new HashTable(10000); // Tabla de Hash en la cual se consultaran los cubos Rubik ya visitados.
-    State *startingState = new State(startingCube, nullptr, 0, ' ', 0);
-    open->insert(0, startingState);
-    while (!open->isEmpty())
-    {
-        current = open->pull();
-
-        if (current->cube->isSolved())
-        {
-            current->printPath();
-            return;
-        }
-
-        for (int i = 0; i < 6; i++)
-        {
-            // Se iteran los posibles movimientos
-            for (int j = 0; j < 2; j++)
-            {
-                // Se itera el sentido de los movimientos
-                if (current->move != faces[i] || current->cw == cws[j])
-                {
-                    Rubik *neighborCube = current->cube->rotate(cws[j], faces[i]);
-                    if (!closed->isInTable(neighborCube) && !openHash->isInTable(neighborCube))
-                    {
-                        neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
-                        open->insert(current->depth + 1, neighborState); // Falta agregarle el valor heuristico
-                        openHash->add(neighborCube);
-                    }
-                    else
-                    {
-                        delete neighborCube;
-                    }
-                }
-            }
-        }
-        closed->add(current->cube);
-    }
+    State *state1 = new State(startingCube, nullptr, 0, ' ', 0);
+    State *state2 = partialSolve(state1, 1);
+    State *state3 = partialSolve(state2, 2);
+    State *state4 = partialSolve(state3, 3);
+    State *state5 = partialSolve(state4, 4);
+    State *state6 = partialSolve(state5, 5);
+    State *state7 = partialSolve(state6, 6);
+    State *state8 = partialSolve(state7, 7);
+    State *state9 = partialSolve(state8, 8);
+    State *state10 = partialSolve(state9, 9);
+    State *state11 = partialSolve(state10, 10);
+    state11->printPath();
 }
 
 /*
@@ -92,7 +62,11 @@ State *RubikSolver::partialSolve(State *startingState, int step)
             delete closed;
             return current;
         }
-
+        // std::cout << std::endl;
+        // std::cout << std::endl;
+        // std::cout << "Cubo en profundidad: " << current->depth << std::endl;
+        // current->cube->print();
+        // std::cout << std::endl;
         for (int i = 0; i < 6; i++)
         {
             // Se iteran los posibles movimientos
@@ -137,18 +111,27 @@ bool RubikSolver::stopPoint(Rubik *cube, int step)
         return whiteComplete(cube);
         break;
     case 3:
-        return middleComplete(cube) && whiteComplete(cube);
+        return edgeRedBlue(cube) && whiteComplete(cube);
         break;
     case 4:
-        return middleComplete(cube) && whiteComplete(cube) && yellowCross(cube);
+        return edgeRedGreen(cube) && edgeRedBlue(cube) && whiteComplete(cube);
         break;
     case 5:
-        return middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        return edgeOrangeBlue(cube) && edgeRedGreen(cube) && edgeRedBlue(cube) && whiteComplete(cube);
         break;
     case 6:
-        return wellPosYellowCorners(cube) && middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        return edgeOrangeGreen(cube) && edgeOrangeBlue(cube) && edgeRedGreen(cube) && edgeRedBlue(cube) && whiteComplete(cube);
         break;
     case 7:
+        return middleComplete(cube) && whiteComplete(cube) && yellowCross(cube);
+        break;
+    case 8:
+        return middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        break;
+    case 9:
+        return wellPosYellowCorners(cube) && middleComplete(cube) && whiteComplete(cube) && correctYellowCross(cube);
+        break;
+    case 10:
         return cube->isSolved();
         break;
     default:
@@ -205,6 +188,26 @@ bool RubikSolver::middleComplete(Rubik *cube)
     }
 
     return true;
+}
+
+bool RubikSolver::edgeRedBlue(Rubik *cube)
+{
+    return cube->F[1][0] == RED && cube->L[1][2] == BLUE;
+}
+
+bool RubikSolver::edgeRedGreen(Rubik *cube)
+{
+    return cube->F[1][2] == RED && cube->R[1][0] == GREEN;
+}
+
+bool RubikSolver::edgeOrangeBlue(Rubik *cube)
+{
+    return cube->B[1][2] == ORANGE && cube->L[1][0] == BLUE;
+}
+
+bool RubikSolver::edgeOrangeGreen(Rubik *cube)
+{
+    return cube->B[1][0] == ORANGE && cube->R[1][2] == GREEN;
 }
 
 bool RubikSolver::yellowCross(Rubik *cube)
@@ -264,18 +267,27 @@ int RubikSolver::heuristicValue(Rubik *cube, int step)
         return whiteCrossHeuristic(cube) + whiteCompleteHeuristic(cube);
         break;
     case 3:
-        return middleCompleteHeuristic(cube);
+        return edgeRedBlueHeuristic(cube);
         break;
     case 4:
-        return yellowCrossHeuristic(cube);
+        return edgeRedGreenHeuristic(cube);
         break;
     case 5:
-        return correctYellowCrossHeuristic(cube);
+        return edgeOrangeBlueHeuristic(cube);
         break;
     case 6:
-        return wellPosYellowCornersHeuristic(cube);
+        return edgeOrangeGreenHeuristic(cube);
         break;
     case 7:
+        return yellowCrossHeuristic(cube);
+        break;
+    case 8:
+        return correctYellowCrossHeuristic(cube);
+        break;
+    case 9:
+        return wellPosYellowCornersHeuristic(cube);
+        break;
+    case 10:
         return toSolvedHeuristic(cube);
         break;
     default:
@@ -550,11 +562,9 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
     return value;
 }
 
-int RubikSolver::middleCompleteHeuristic(Rubik *cube)
+int RubikSolver::edgeRedBlueHeuristic(Rubik *cube)
 {
-    int left, right, dist, color, colorFace, upColor, upColorFace, edgeFace, oppFace, useFace, useFace2;
-    int value = 0;
-    int count = 4;
+    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -562,672 +572,974 @@ int RubikSolver::middleCompleteHeuristic(Rubik *cube)
     facesH[2] = cube->B;
     facesH[3] = cube->L;
 
-    int colors[4] = {31, 32, 35, 34};
-    for (int k = 0; k < 4 && count != 0; k += 2)
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
+    int edgeColors[4] = {RED, BLUE, RED, BLUE};
+    int edgesH[4][2] = {
+        {cube->F[1][0], cube->L[1][2]},
+        {cube->F[1][2], cube->R[1][0]},
+        {cube->B[1][0], cube->R[1][2]},
+        {cube->B[1][2], cube->L[1][0]}};
+
+    int edgesU[4][3] = {
+        {cube->U[0][1], cube->B[0][1], 2},
+        {cube->U[1][0], cube->L[0][1], 3},
+        {cube->U[2][1], cube->F[0][1], 0},
+        {cube->U[1][2], cube->R[0][1], 1}};
+
+    if (whiteComplete(cube))
     {
-        left = leftFaceIndex(k);
-        right = rightFaceIndex(k);
-        color = facesH[k][1][1];
-        if (facesH[k][1][0] != 37 &&
-            facesH[k][1][0] != 33 &&
-            facesH[left][1][2] != 37 &&
-            facesH[left][1][2] != 33)
+        if (edgeRedBlue(cube))
         {
-            // Entra si el color del borde horizontal no es blanco ni amarillo.
-            if (facesH[right][1][0] == 37 ||
-                facesH[leftFaceIndex(left)][1][2] == 37)
-            {
-                // Si alguna cara que afecte al posicionamiento de el borde que se esta
-                //  consultando esta rotada (sin el color blanco en la posicion correcta)
-                //  entonces tomara 7 movimientos aproximadamente dejarlo en su lugar.
-                value += 7;
-                // std::cout << "+7 en borde (1, 0) " << k << std::endl;
-            }
-            else if (facesH[k][1][0] != color ||
-                     facesH[left][1][2] != facesH[left][1][1])
-            {
-                // Si el borde no esta posicionado correctamente, entonces toma
-                //  aproximadamente 16 movimientos llevarlo a su lugar.
-                value += 16;
-                // std::cout << "+14 en borde (1, 0) " << k << std::endl;
-            }
-            // En otro caso el borde esta en la posicion correcta.
-            // std::cout << "+0 en borde (1, 0) " << k << std::endl;
-            count--;
+            return 0;
         }
 
-        if (facesH[k][1][2] != 37 &&
-            facesH[k][1][2] != 33 &&
-            facesH[right][1][0] != 37 &&
-            facesH[right][1][0] != 33)
+        for (int i = 0; i < 4; i++)
         {
-            // Entra si el color del borde horizontal no es blanco ni amarillo.
-            if (facesH[left][1][2] == 37 ||
-                facesH[leftFaceIndex(left)][1][0] == 37)
+            if (isEdgeInPos(edgeColors, edgesH[i]))
             {
-                // Si alguna cara que afecte al posicionamiento de el borde que se esta
-                //  consultando esta rotada (sin el color blanco en la posicion correcta)
-                //  entonces tomara 7 movimientos aproximadamente dejarlo en su lugar.
-                value += 7;
-                // std::cout << "+7 en borde (1, 2) " << k << std::endl;
+                return 16;
             }
-            else if (facesH[k][1][2] != color ||
-                     facesH[right][1][0] != facesH[right][1][1])
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (isEdgeInPos(edgeColors, edgesU[i]))
             {
-                // Si el borde no esta posicionado correctamente, entonces toma
-                //  aproximadamente 16 movimientos llevarlo a su lugar.
-                value += 16;
-                // std::cout << "+14 en borde (1, 2) " << k << std::endl;
+                colorFaceU = getIndex(colors, edgesU[i][0]);
+                distU = distance(colorFaceU, edgesU[i][2]);
+                return 9 - distU;
             }
-            // En otro caso el borde esta en la posicion correcta.
-            // std::cout << "+0 en borde (1, 2) " << k << std::endl;
-            count--;
+        }
+
+        return 150;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (isEdgeInPos(edgeColors, edgesU[i]))
+        {
+            colorFaceH = getIndex(colors, edgesU[i][1]);
+            distH = distance(colorFaceH, edgesU[i][2]);
+            colorFaceU = getIndex(colors, edgesU[i][0]);
+            distU = distance(colorFaceU, edgesU[i][2]);
+            oppU = leftFaceIndex(leftFaceIndex(colorFaceU));
+            colorFace = edgesU[i][2];
+            left = leftFaceIndex(colorFace);
+            right = rightFaceIndex(colorFace);
+            opp = leftFaceIndex(left);
+
+            if (colorFaceH == 3)
+            {
+                aux = 2;
+            }
+            else
+            {
+                aux = 0;
+            }
+
+            if (distU == 2 &&
+                facesH[colorFaceH][0][aux] == WHITE &&
+                facesH[colorFaceH][1][aux] == WHITE &&
+                facesH[colorFaceH][2][aux] == WHITE &&
+                numCorrectColorsFace(cube->D) == 6)
+            {
+                return 6;
+            }
+            else if (distH == 2 &&
+                     facesH[colorFaceH][1][aux] == WHITE &&
+                     facesH[colorFaceH][2][aux] == WHITE &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 5;
+            }
+            else if (distH == 2 &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 4;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceH][0][aux] == WHITE &&
+                     facesH[colorFaceU][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 3;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][0][2 - aux] == WHITE &&
+                     facesH[oppU][0][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 2;
+            }
+            else if (distH == 0 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][0][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 1;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[left][1][2] == WHITE &&
+                     facesH[left][2][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[right][1][0] == WHITE &&
+                     facesH[right][2][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     facesH[colorFace][1][2] == WHITE &&
+                     facesH[colorFace][2][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][0][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     facesH[opp][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[colorFaceH][1][2] == WHITE &&
+                     facesH[colorFaceH][2][2] == WHITE &&
+                     facesH[right][0][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     facesH[opp][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[left][0][0] == WHITE &&
+                     facesH[left][1][0] == WHITE &&
+                     facesH[left][2][0] == WHITE &&
+                     facesH[opp][0][2] == facesH[opp][1][1] &&
+                     facesH[opp][1][2] == facesH[opp][1][1] &&
+                     facesH[opp][2][2] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else if (facesH[right][0][2] == WHITE &&
+                     facesH[right][1][2] == WHITE &&
+                     facesH[right][2][2] == WHITE &&
+                     facesH[opp][0][0] == facesH[opp][1][1] &&
+                     facesH[opp][1][0] == facesH[opp][1][1] &&
+                     facesH[opp][2][0] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else
+            {
+                return 150;
+            }
         }
     }
 
-    int prueba;   // BORRAR!!!!
-    edgeFace = 2; // Cara trasera, la cual es parte del cubito del borde a revisar.
-    upColor = cube->U[0][1];
-    color = facesH[edgeFace][0][1];
-    prueba = value;
-    if (upColor != 37 &&
-        upColor != 33 &&
-        color != 37 &&
-        color != 33)
+    return 150;
+}
+
+int RubikSolver::edgeRedGreenHeuristic(Rubik *cube)
+{
+    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
+    int edgeColors[4] = {RED, GREEN, RED, GREEN};
+    int edgesH[4][2] = {
+        {cube->F[1][0], cube->L[1][2]},
+        {cube->F[1][2], cube->R[1][0]},
+        {cube->B[1][0], cube->R[1][2]},
+        {cube->B[1][2], cube->L[1][0]}};
+
+    int edgesU[4][3] = {
+        {cube->U[0][1], cube->B[0][1], 2},
+        {cube->U[1][0], cube->L[0][1], 3},
+        {cube->U[2][1], cube->F[0][1], 0},
+        {cube->U[1][2], cube->R[0][1], 1}};
+
+    int edgesD[4][2] = {
+        {cube->D[0][1], cube->F[2][1]},
+        {cube->D[1][0], cube->L[2][1]},
+        {cube->D[2][1], cube->B[2][1]},
+        {cube->D[1][2], cube->R[2][1]}};
+
+    if (whiteComplete(cube))
     {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        oppFace = 0; // Cara contraria/ al frente del cubito del borde a revisar.
-        colorFace = getIndex(colors, color);
-        upColorFace = getIndex(colors, upColor);
-        useFace = -1;
-        useFace2 = -1;
-        left = leftFaceIndex(edgeFace);
-        right = rightFaceIndex(edgeFace);
-        if (facesH[left][0][2] == 37)
+        if (edgeRedGreen(cube))
         {
-            useFace = left;
-        }
-        else if (facesH[right][0][0] == 37)
-        {
-            useFace = right;
+            return 0;
         }
 
-        if (facesH[left][0][0] == 37)
+        for (int i = 0; i < 4; i++)
         {
-            useFace2 = left;
-        }
-        else if (facesH[right][0][2] == 37)
-        {
-            useFace2 = right;
+            if (isEdgeInPos(edgeColors, edgesH[i]))
+            {
+                return 16;
+            }
         }
 
-        if (useFace != -1 &&
-            upColor != cube->U[0][3 - useFace])
+        for (int i = 0; i < 4; i++)
         {
-            if (facesH[useFace][1][3 - useFace] == 37)
+            if (isEdgeInPos(edgeColors, edgesU[i]))
             {
-                value += 15;
+                colorFaceU = getIndex(colors, edgesU[i][0]);
+                distU = distance(colorFaceU, edgesU[i][2]);
+                return 9 - distU;
             }
-            else if (facesH[edgeFace][1][3 - useFace] == 37)
-            {
-                value += 14;
-            }
-            else if (facesH[edgeFace][0][useFace - 1] == facesH[edgeFace][1][1])
-            {
-                value += 12;
-            }
-            else
-            {
-                value += 13;
-            }
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][3 - useFace2] != facesH[oppFace][0][1] &&
-                 cube->U[2][1] != cube->U[2][3 - useFace2] &&
-                 facesH[oppFace][1][3 - useFace2] == facesH[oppFace][1][1] &&
-                 facesH[useFace2][1][useFace2 - 1] == 37)
-        {
-            value += 10;
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][3 - useFace2] != facesH[oppFace][0][1] &&
-                 cube->U[2][1] != cube->U[2][3 - useFace2])
-        {
-            value += 11;
-        }
-        else if (oppFace == upColorFace)
-        {
-            // Entra si el color del cubito del borde esta posicionado al frente de su color.
-            if (facesH[colorFace][0][colorFace - 1] == 37 &&
-                facesH[oppFace][0][3 - colorFace] == facesH[oppFace][1][1])
-            {
-                if (facesH[colorFace][1][colorFace - 1] == 37 &&
-                    facesH[oppFace][1][3 - colorFace] == facesH[oppFace][1][1])
-                {
-                    value += 6;
-                }
-                else
-                {
-                    value += 3;
-                }
-            }
-            else if (facesH[edgeFace][0][colorFace - 1] == color &&
-                     facesH[colorFace][0][3 - colorFace] == 37)
-            {
-                value += 2;
-            }
-            else
-            {
-                value += 7;
-            }
-        }
-        else if (facesH[oppFace][1][1] == color &&
-                 facesH[oppFace][0][upColorFace - 1] == upColor &&
-                 facesH[leftFaceIndex(leftFaceIndex(upColorFace))][0][3 - upColorFace] == 37)
-        {
-            if (facesH[upColorFace][1][upColorFace - 1] == upColor &&
-                facesH[oppFace][1][3 - upColorFace] == 37)
-            {
-                value += 5;
-            }
-            else
-            {
-                value += 4;
-            }
-        }
-        else if (colorFace == edgeFace &&
-                 facesH[edgeFace][0][upColorFace - 1] == color &&
-                 facesH[edgeFace][1][upColorFace - 1] == color &&
-                 facesH[upColorFace][0][3 - upColorFace] == 37 &&
-                 facesH[upColorFace][1][3 - upColorFace] == 37)
-        {
-            value += 1;
-        }
-        else
-        {
-            dist = distance(upColorFace, edgeFace);
-            value += 9 - dist;
-        }
-    }
-    // std::cout << "+" << value - prueba << " en UP (0, 1)" << std::endl;
-
-    edgeFace = 3; // Cara trasera, la cual es parte del cubito del borde a revisar.
-    upColor = cube->U[1][0];
-    color = facesH[edgeFace][0][1];
-    prueba = value;
-    if (upColor != 37 &&
-        upColor != 33 &&
-        color != 37 &&
-        color != 33)
-    {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        oppFace = 1; // Cara contraria/ al frente del cubito del borde a revisar.
-        colorFace = getIndex(colors, color);
-        upColorFace = getIndex(colors, upColor);
-        useFace = -1;
-        useFace2 = -1;
-        left = leftFaceIndex(edgeFace);
-        right = rightFaceIndex(edgeFace);
-        if (facesH[left][0][2] == 37)
-        {
-            useFace = left;
-        }
-        else if (facesH[right][0][0] == 37)
-        {
-            useFace = right;
         }
 
-        if (facesH[left][0][0] == 37)
-        {
-            useFace2 = left;
-        }
-        else if (facesH[right][0][2] == 37)
-        {
-            useFace2 = right;
-        }
-
-        if (useFace != -1 &&
-            upColor != cube->U[2 - useFace][0])
-        {
-            if (facesH[useFace][1][useFace] == 37)
-            {
-                value += 15;
-            }
-            else if (facesH[edgeFace][1][useFace] == 37)
-            {
-                value += 14;
-            }
-            else if (facesH[edgeFace][0][2 - useFace] == facesH[edgeFace][1][1])
-            {
-                value += 12;
-            }
-            else
-            {
-                value += 13;
-            }
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][useFace2] != facesH[oppFace][0][1] &&
-                 cube->U[1][2] != cube->U[2 - useFace2][2] &&
-                 facesH[oppFace][1][useFace2] == facesH[oppFace][1][1] &&
-                 facesH[useFace2][1][2 - useFace2] == 37)
-        {
-            value += 10;
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][useFace2] != facesH[oppFace][0][1] &&
-                 cube->U[1][2] != cube->U[2 - useFace2][2])
-        {
-            value += 11;
-        }
-        else if (oppFace == upColorFace)
-        {
-            // Entra si el color del cubito del borde esta posicionado al frente de su color.
-            if (facesH[colorFace][0][2 - colorFace] == 37 &&
-                facesH[oppFace][0][colorFace] == facesH[oppFace][1][1])
-            {
-                if (facesH[colorFace][1][2 - colorFace] == 37 &&
-                    facesH[oppFace][1][colorFace] == facesH[oppFace][1][1])
-                {
-                    value += 6;
-                }
-                else
-                {
-                    value += 3;
-                }
-            }
-            else if (facesH[edgeFace][0][2 - colorFace] == color && // Mejorable (se puede especificar más)
-                     facesH[colorFace][0][colorFace] == 37)         // facesH[oppFace][1][colorFace] == 37 && facesH[colorFace][1][2 - colorFace]
-            {
-                value += 2;
-            }
-            else
-            {
-                value += 7;
-            }
-        }
-        else if (facesH[oppFace][1][1] == color &&
-                 facesH[oppFace][0][2 - upColorFace] == upColor &&
-                 facesH[leftFaceIndex(leftFaceIndex(upColorFace))][0][upColorFace] == 37)
-        {
-            if (facesH[upColorFace][1][2 - upColorFace] == upColor &&
-                facesH[oppFace][1][upColorFace] == 37)
-            {
-                value += 5;
-            }
-            else
-            {
-                value += 4;
-            }
-        }
-        else if (colorFace == edgeFace &&
-                 facesH[edgeFace][0][2 - upColorFace] == color &&
-                 facesH[edgeFace][1][2 - upColorFace] == color &&
-                 facesH[upColorFace][0][upColorFace] == 37 &&
-                 facesH[upColorFace][1][upColorFace] == 37)
-        {
-            value += 1;
-        }
-        else
-        {
-            dist = distance(upColorFace, edgeFace);
-            value += 9 - dist;
-        }
-    }
-    // std::cout << "+" << value - prueba << " en UP (1, 0)" << std::endl;
-
-    edgeFace = 0; // Cara trasera, la cual es parte del cubito del borde a revisar.
-    upColor = cube->U[2][1];
-    color = facesH[edgeFace][0][1];
-    prueba = value;
-    if (upColor != 37 &&
-        upColor != 33 &&
-        color != 37 &&
-        color != 33)
-    {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        oppFace = 2; // Cara contraria/ al frente del cubito del borde a revisar.
-        colorFace = getIndex(colors, color);
-        upColorFace = getIndex(colors, upColor);
-        useFace = -1;
-        useFace2 = -1;
-        left = leftFaceIndex(edgeFace);
-        right = rightFaceIndex(edgeFace);
-        if (facesH[left][0][2] == 37)
-        {
-            useFace = left;
-        }
-        else if (facesH[right][0][0] == 37)
-        {
-            useFace = right;
-        }
-
-        if (facesH[left][0][0] == 37)
-        {
-            useFace2 = left;
-        }
-        else if (facesH[right][0][2] == 37)
-        {
-            useFace2 = right;
-        }
-
-        if (useFace != -1 &&
-            upColor != cube->U[2][3 - useFace])
-        {
-            if (facesH[useFace][1][useFace - 1] == 37)
-            {
-                value += 15;
-            }
-            else if (facesH[edgeFace][1][useFace - 1] == 37)
-            {
-                value += 14;
-            }
-            else if (facesH[edgeFace][0][3 - useFace] == facesH[edgeFace][1][1])
-            {
-                value += 12;
-            }
-            else
-            {
-                value += 13;
-            }
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][useFace2 - 1] != facesH[oppFace][0][1] &&
-                 cube->U[0][1] != cube->U[0][3 - useFace2])
-        {
-            if (facesH[oppFace][1][useFace2 - 1] == facesH[oppFace][1][1] &&
-                facesH[useFace2][1][3 - useFace2] == 37)
-            {
-                value += 10;
-            }
-            else
-            {
-                value += 11;
-            }
-        }
-        else if (oppFace == upColorFace)
-        {
-            // Entra si el color del cubito del borde esta posicionado al frente de su color.
-            if (facesH[colorFace][0][3 - colorFace] == 37 &&
-                facesH[oppFace][0][colorFace - 1] == facesH[oppFace][1][1])
-            {
-                if (facesH[colorFace][1][3 - colorFace] == 37 &&
-                    facesH[oppFace][1][colorFace - 1] == facesH[oppFace][1][1])
-                {
-                    value += 6;
-                }
-                else
-                {
-                    value += 3;
-                }
-            }
-            else if (facesH[edgeFace][0][3 - colorFace] == color &&
-                     facesH[colorFace][0][colorFace - 1] == 37)
-            {
-                value += 2;
-            }
-            else
-            {
-                value += 7;
-            }
-        }
-        else if (facesH[oppFace][1][1] == color &&
-                 facesH[oppFace][0][3 - upColorFace] == upColor &&
-                 facesH[leftFaceIndex(leftFaceIndex(upColorFace))][0][upColorFace - 1] == 37)
-        {
-            if (facesH[upColorFace][1][3 - upColorFace] == upColor &&
-                facesH[oppFace][1][upColorFace - 1] == 37)
-            {
-                value += 5;
-            }
-            else
-            {
-                value += 4;
-            }
-        }
-        else if (colorFace == edgeFace &&
-                 facesH[edgeFace][0][3 - upColorFace] == color &&
-                 facesH[edgeFace][1][3 - upColorFace] == color &&
-                 facesH[upColorFace][0][upColorFace - 1] == 37 &&
-                 facesH[upColorFace][1][upColorFace - 1] == 37)
-        {
-            value += 1;
-        }
-        else
-        {
-            dist = distance(upColorFace, edgeFace);
-            value += 9 - dist;
-        }
-    }
-    // std::cout << "+" << value - prueba << " en UP (2, 1)" << std::endl;
-
-    edgeFace = 1; // Cara trasera, la cual es parte del cubito del borde a revisar.
-    upColor = cube->U[1][2];
-    color = facesH[edgeFace][0][1];
-    prueba = value;
-    if (upColor != 37 &&
-        upColor != 33 &&
-        color != 37 &&
-        color != 33)
-    {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        oppFace = 3; // Cara contraria/ al frente del cubito del borde a revisar.
-        colorFace = getIndex(colors, color);
-        upColorFace = getIndex(colors, upColor);
-        useFace = -1;
-        useFace2 = -1;
-        left = leftFaceIndex(edgeFace);
-        right = rightFaceIndex(edgeFace);
-        if (facesH[left][0][2] == 37)
-        {
-            useFace = left;
-        }
-        else if (facesH[right][0][0] == 37)
-        {
-            useFace = right;
-        }
-
-        if (facesH[left][0][0] == 37)
-        {
-            useFace2 = left;
-        }
-        else if (facesH[right][0][2] == 37)
-        {
-            useFace2 = right;
-        }
-
-        if (useFace != -1 &&
-            upColor != cube->U[2 - useFace][2])
-        {
-            if (facesH[useFace][1][2 - useFace] == 37)
-            {
-                value += 15;
-            }
-            else if (facesH[edgeFace][1][2 - useFace] == 37)
-            {
-                value += 14;
-            }
-            else if (facesH[edgeFace][0][useFace] == facesH[edgeFace][1][1])
-            {
-                value += 12;
-            }
-            else
-            {
-                value += 13;
-            }
-        }
-        else if (useFace2 != -1 &&
-                 facesH[oppFace][0][2 - useFace2] != facesH[oppFace][0][1] &&
-                 cube->U[1][0] != cube->U[2 - useFace2][0])
-        {
-            if (facesH[oppFace][1][2 - useFace2] == facesH[oppFace][1][1] &&
-                facesH[useFace2][1][useFace2] == 37)
-            {
-                value += 10;
-            }
-            else
-            {
-                value += 11;
-            }
-        }
-        else if (oppFace == upColorFace)
-        {
-            // Entra si el color del cubito del borde esta posicionado al frente de su color.
-            if (facesH[colorFace][0][colorFace] == 37 &&
-                facesH[oppFace][0][2 - colorFace] == facesH[oppFace][1][1])
-            {
-                if (facesH[colorFace][1][colorFace] == 37 &&
-                    facesH[oppFace][1][2 - colorFace] == facesH[oppFace][1][1])
-                {
-                    value += 6;
-                }
-                else
-                {
-                    value += 3;
-                }
-            }
-            else if (facesH[edgeFace][0][colorFace] == color &&
-                     facesH[colorFace][0][2 - colorFace] == 37)
-            {
-                value += 2;
-            }
-            else
-            {
-                value += 7;
-            }
-        }
-        else if (facesH[oppFace][1][1] == color &&
-                 facesH[oppFace][0][upColorFace] == upColor &&
-                 facesH[leftFaceIndex(leftFaceIndex(upColorFace))][0][2 - upColorFace] == 37)
-        {
-            if (facesH[upColorFace][1][upColorFace] == upColor &&
-                facesH[oppFace][1][2 - upColorFace] == 37)
-            {
-                value += 5;
-            }
-            else
-            {
-                value += 4;
-            }
-        }
-        else if (colorFace == edgeFace &&
-                 facesH[edgeFace][0][upColorFace] == color &&
-                 facesH[edgeFace][1][upColorFace] == color &&
-                 facesH[upColorFace][0][2 - upColorFace] == 37 &&
-                 facesH[upColorFace][1][2 - upColorFace] == 37)
-        {
-            value += 1;
-        }
-        else
-        {
-            dist = distance(upColorFace, edgeFace);
-            value += 9 - dist;
-        }
-    }
-    // std::cout << "+" << value - prueba << " en UP (1, 2)" << std::endl;
-
-    edgeFace = 0;
-    color = cube->D[0][1];
-    if (color != 37 &&
-        color != 33 &&
-        facesH[edgeFace][2][1] != 37 &&
-        facesH[edgeFace][2][1] != 33)
-    {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        colorFace = getIndex(colors, color);
-        oppFace = leftFaceIndex(leftFaceIndex(colorFace));
-        if (colorFace != 3 ||
-            colorFace != 1 ||
-            facesH[edgeFace][2][1] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][2][colorFace - 1] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][1][colorFace - 1] != facesH[edgeFace][1][1] ||
-            facesH[oppFace][2][3 - colorFace] != 37 ||
-            facesH[oppFace][1][3 - colorFace] != 37)
-        {
-            // Entra si el cubito del borde no esta posicionado correctamente
-            value += 16;
-            // std::cout << "+14 en D (0, 1)" << std::endl;
-        }
-        // std::cout << "+0 en D (0, 1)" << std::endl;
+        return 150;
     }
 
-    edgeFace = 3;
-    color = cube->D[1][0];
-    if (color != 37 &&
-        color != 33 &&
-        facesH[edgeFace][2][1] != 37 &&
-        facesH[edgeFace][2][1] != 33)
+    for (int i = 0; i < 4; i++)
     {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        colorFace = getIndex(colors, color);
-        oppFace = leftFaceIndex(leftFaceIndex(colorFace));
-        if (colorFace != 0 ||
-            colorFace != 2 ||
-            facesH[edgeFace][2][1] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][2][colorFace] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][1][colorFace] != facesH[edgeFace][1][1] ||
-            facesH[oppFace][2][2 - colorFace] != 37 ||
-            facesH[oppFace][1][2 - colorFace] != 37)
+        if (isEdgeInPos(edgeColors, edgesU[i]))
         {
-            // Entra si el cubito del borde no esta posicionado correctamente
-            value += 16;
-            // std::cout << "+14 en D (1, 0)" << std::endl;
+            colorFaceH = getIndex(colors, edgesU[i][1]);
+            distH = distance(colorFaceH, edgesU[i][2]);
+            colorFaceU = getIndex(colors, edgesU[i][0]);
+            distU = distance(colorFaceU, edgesU[i][2]);
+            oppU = leftFaceIndex(leftFaceIndex(colorFaceU));
+            colorFace = edgesU[i][2];
+            left = leftFaceIndex(colorFace);
+            right = rightFaceIndex(colorFace);
+            opp = leftFaceIndex(left);
+            if (colorFaceH == 0)
+            {
+                aux = 2;
+            }
+            else
+            {
+                aux = 0;
+            }
+
+            if (distU == 2 &&
+                facesH[colorFaceH][0][aux] == WHITE &&
+                facesH[colorFaceH][1][aux] == WHITE &&
+                facesH[colorFaceH][2][aux] == WHITE &&
+                numCorrectColorsFace(cube->D) == 6)
+            {
+                return 6;
+            }
+            else if (distH == 2 &&
+                     facesH[colorFaceH][1][aux] == WHITE &&
+                     facesH[colorFaceH][2][aux] == WHITE &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 5;
+            }
+            else if (distH == 2 &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 4;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceH][0][aux] == WHITE &&
+                     facesH[colorFaceU][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 3;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][0][2 - aux] == WHITE &&
+                     facesH[oppU][0][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 2;
+            }
+            else if (distH == 0 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][0][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 1;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[left][1][2] == WHITE &&
+                     facesH[left][2][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[right][1][0] == WHITE &&
+                     facesH[right][2][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     facesH[colorFace][1][2] == WHITE &&
+                     facesH[colorFace][2][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][0][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     facesH[opp][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[colorFaceH][1][2] == WHITE &&
+                     facesH[colorFaceH][2][2] == WHITE &&
+                     facesH[right][0][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     facesH[opp][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[left][0][0] == WHITE &&
+                     facesH[left][1][0] == WHITE &&
+                     facesH[left][2][0] == WHITE &&
+                     facesH[opp][0][2] == facesH[opp][1][1] &&
+                     facesH[opp][1][2] == facesH[opp][1][1] &&
+                     facesH[opp][2][2] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else if (facesH[right][0][2] == WHITE &&
+                     facesH[right][1][2] == WHITE &&
+                     facesH[right][2][2] == WHITE &&
+                     facesH[opp][0][0] == facesH[opp][1][1] &&
+                     facesH[opp][1][0] == facesH[opp][1][1] &&
+                     facesH[opp][2][0] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else
+            {
+                return 150;
+            }
         }
-        // std::cout << "+0 en D (1, 0)" << std::endl;
     }
 
-    edgeFace = 2;
-    color = cube->D[2][1];
-    if (color != 37 &&
-        color != 33 &&
-        facesH[edgeFace][2][1] != 37 &&
-        facesH[edgeFace][2][1] != 33)
+    return 150;
+}
+
+int RubikSolver::edgeOrangeBlueHeuristic(Rubik *cube)
+{
+    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
+    int edgeColors[4] = {ORANGE, BLUE, ORANGE, BLUE};
+    int edgesH[4][2] = {
+        {cube->F[1][0], cube->L[1][2]},
+        {cube->F[1][2], cube->R[1][0]},
+        {cube->B[1][0], cube->R[1][2]},
+        {cube->B[1][2], cube->L[1][0]}};
+
+    int edgesU[4][3] = {
+        {cube->U[0][1], cube->B[0][1], 2},
+        {cube->U[1][0], cube->L[0][1], 3},
+        {cube->U[2][1], cube->F[0][1], 0},
+        {cube->U[1][2], cube->R[0][1], 1}};
+
+    int edgesD[4][2] = {
+        {cube->D[0][1], cube->F[2][1]},
+        {cube->D[1][0], cube->L[2][1]},
+        {cube->D[2][1], cube->B[2][1]},
+        {cube->D[1][2], cube->R[2][1]}};
+
+    if (whiteComplete(cube))
     {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        colorFace = getIndex(colors, color);
-        oppFace = leftFaceIndex(leftFaceIndex(colorFace));
-        if (colorFace != 3 ||
-            colorFace != 1 ||
-            facesH[edgeFace][2][1] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][2][3 - colorFace] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][1][3 - colorFace] != facesH[edgeFace][1][1] ||
-            facesH[oppFace][2][colorFace - 1] != 37 ||
-            facesH[oppFace][1][colorFace - 1] != 37)
+        if (edgeOrangeBlue(cube))
         {
-            // Entra si el cubito del borde no esta posicionado correctamente
-            value += 16;
-            // std::cout << "+14 en D (2, 1)" << std::endl;
+            return 0;
         }
-        // std::cout << "+0 en D (2, 1)" << std::endl;
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (isEdgeInPos(edgeColors, edgesH[i]))
+            {
+                return 16;
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (isEdgeInPos(edgeColors, edgesU[i]))
+            {
+                colorFaceU = getIndex(colors, edgesU[i][0]);
+                distU = distance(colorFaceU, edgesU[i][2]);
+                return 9 - distU;
+            }
+        }
+
+        return 150;
     }
 
-    edgeFace = 1;
-    color = cube->D[1][2];
-    if (color != 37 &&
-        color != 33 &&
-        facesH[edgeFace][2][1] != 37 &&
-        facesH[edgeFace][2][1] != 33)
+    for (int i = 0; i < 4; i++)
     {
-        // Entra si el cubito del borde no tiene color blanco ni amarillo.
-        colorFace = getIndex(colors, color);
-        oppFace = leftFaceIndex(leftFaceIndex(colorFace));
-        if (colorFace != 0 ||
-            colorFace != 2 ||
-            facesH[edgeFace][2][1] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][2][2 - colorFace] != facesH[edgeFace][1][1] ||
-            facesH[edgeFace][1][2 - colorFace] != facesH[edgeFace][1][1] ||
-            facesH[oppFace][2][colorFace] != 37 ||
-            facesH[oppFace][1][colorFace] != 37)
+        if (isEdgeInPos(edgeColors, edgesU[i]))
         {
-            // Entra si el cubito del borde no esta posicionado correctamente
-            value += 16;
-            // std::cout << "+14 en D (1, 2)" << std::endl;
+            colorFaceH = getIndex(colors, edgesU[i][1]);
+            distH = distance(colorFaceH, edgesU[i][2]);
+            colorFaceU = getIndex(colors, edgesU[i][0]);
+            distU = distance(colorFaceU, edgesU[i][2]);
+            oppU = leftFaceIndex(leftFaceIndex(colorFaceU));
+            colorFace = edgesU[i][2];
+            left = leftFaceIndex(colorFace);
+            right = rightFaceIndex(colorFace);
+            opp = leftFaceIndex(left);
+
+            if (colorFaceH == 3)
+            {
+                aux = 2;
+            }
+            else
+            {
+                aux = 0;
+            }
+
+            if (distU == 2 &&
+                facesH[colorFaceH][0][aux] == WHITE &&
+                facesH[colorFaceH][1][aux] == WHITE &&
+                facesH[colorFaceH][2][aux] == WHITE &&
+                numCorrectColorsFace(cube->D) == 6)
+            {
+                return 6;
+            }
+            else if (distH == 2 &&
+                     facesH[colorFaceH][1][aux] == WHITE &&
+                     facesH[colorFaceH][2][aux] == WHITE &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 5;
+            }
+            else if (distH == 2 &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 4;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceH][0][aux] == WHITE &&
+                     facesH[colorFaceU][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 3;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][0][2 - aux] == WHITE &&
+                     facesH[oppU][0][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 2;
+            }
+            else if (distH == 0 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][0][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 1;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[left][1][2] == WHITE &&
+                     facesH[left][2][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[right][1][0] == WHITE &&
+                     facesH[right][2][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     facesH[colorFace][1][2] == WHITE &&
+                     facesH[colorFace][2][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][0][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     facesH[opp][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[colorFaceH][1][2] == WHITE &&
+                     facesH[colorFaceH][2][2] == WHITE &&
+                     facesH[right][0][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     facesH[opp][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[left][0][0] == WHITE &&
+                     facesH[left][1][0] == WHITE &&
+                     facesH[left][2][0] == WHITE &&
+                     facesH[opp][0][2] == facesH[opp][1][1] &&
+                     facesH[opp][1][2] == facesH[opp][1][1] &&
+                     facesH[opp][2][2] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else if (facesH[right][0][2] == WHITE &&
+                     facesH[right][1][2] == WHITE &&
+                     facesH[right][2][2] == WHITE &&
+                     facesH[opp][0][0] == facesH[opp][1][1] &&
+                     facesH[opp][1][0] == facesH[opp][1][1] &&
+                     facesH[opp][2][0] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else
+            {
+                return 150;
+            }
         }
-        // std::cout << "+0 en D (1, 2)" << std::endl;
     }
 
-    delete[] facesH;
-    return value;
+    return 150;
+}
+
+int RubikSolver::edgeOrangeGreenHeuristic(Rubik *cube)
+{
+    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+
+    int ***facesH = new int **[4];
+    facesH[0] = cube->F;
+    facesH[1] = cube->R;
+    facesH[2] = cube->B;
+    facesH[3] = cube->L;
+
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
+    int edgeColors[4] = {ORANGE, GREEN, ORANGE, GREEN};
+    int edgesH[4][2] = {
+        {cube->F[1][0], cube->L[1][2]},
+        {cube->F[1][2], cube->R[1][0]},
+        {cube->B[1][0], cube->R[1][2]},
+        {cube->B[1][2], cube->L[1][0]}};
+
+    int edgesU[4][3] = {
+        {cube->U[0][1], cube->B[0][1], 2},
+        {cube->U[1][0], cube->L[0][1], 3},
+        {cube->U[2][1], cube->F[0][1], 0},
+        {cube->U[1][2], cube->R[0][1], 1}};
+
+    int edgesD[4][2] = {
+        {cube->D[0][1], cube->F[2][1]},
+        {cube->D[1][0], cube->L[2][1]},
+        {cube->D[2][1], cube->B[2][1]},
+        {cube->D[1][2], cube->R[2][1]}};
+
+    if (whiteComplete(cube))
+    {
+        if (edgeOrangeGreen(cube))
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (isEdgeInPos(edgeColors, edgesH[i]))
+            {
+                return 16;
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (isEdgeInPos(edgeColors, edgesU[i]))
+            {
+                colorFaceU = getIndex(colors, edgesU[i][0]);
+                distU = distance(colorFaceU, edgesU[i][2]);
+                return 9 - distU;
+            }
+        }
+
+        return 150;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (isEdgeInPos(edgeColors, edgesU[i]))
+        {
+            colorFaceH = getIndex(colors, edgesU[i][1]);
+            distH = distance(colorFaceH, edgesU[i][2]);
+            colorFaceU = getIndex(colors, edgesU[i][0]);
+            distU = distance(colorFaceU, edgesU[i][2]);
+            oppU = leftFaceIndex(leftFaceIndex(colorFaceU));
+            colorFace = edgesU[i][2];
+            left = leftFaceIndex(colorFace);
+            right = rightFaceIndex(colorFace);
+            opp = leftFaceIndex(left);
+            if (colorFaceH == 1)
+            {
+                aux = 2;
+            }
+            else
+            {
+                aux = 0;
+            }
+
+            if (distU == 2 &&
+                facesH[colorFaceH][0][aux] == WHITE &&
+                facesH[colorFaceH][1][aux] == WHITE &&
+                facesH[colorFaceH][2][aux] == WHITE &&
+                numCorrectColorsFace(cube->D) == 6)
+            {
+                return 6;
+            }
+            else if (distH == 2 &&
+                     facesH[colorFaceH][1][aux] == WHITE &&
+                     facesH[colorFaceH][2][aux] == WHITE &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 5;
+            }
+            else if (distH == 2 &&
+                     facesH[oppU][0][aux] == WHITE &&
+                     facesH[colorFaceH][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 4;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceH][0][aux] == WHITE &&
+                     facesH[colorFaceU][0][2 - aux] == edgesU[i][0] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 3;
+            }
+            else if (distU == 2 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][0][2 - aux] == WHITE &&
+                     facesH[oppU][0][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 2;
+            }
+            else if (distH == 0 &&
+                     facesH[colorFaceU][1][2 - aux] == WHITE &&
+                     facesH[colorFaceU][2][2 - aux] == WHITE &&
+                     facesH[colorFaceH][0][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][1][aux] == edgesU[i][1] &&
+                     facesH[colorFaceH][2][aux] == edgesU[i][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 1;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[left][1][2] == WHITE &&
+                     facesH[left][2][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][0] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[right][1][0] == WHITE &&
+                     facesH[right][2][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][1][2] == facesH[colorFace][1][1] &&
+                     facesH[colorFace][2][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 15;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     facesH[colorFace][1][2] == WHITE &&
+                     facesH[colorFace][2][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 14;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 13;
+            }
+            else if (facesH[left][0][2] == WHITE &&
+                     facesH[colorFace][0][0] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[right][0][0] == WHITE &&
+                     facesH[colorFace][0][2] == facesH[colorFace][1][1] &&
+                     numCorrectColorsFace(cube->D) == 8)
+            {
+                return 12;
+            }
+            else if (facesH[colorFace][1][0] == WHITE &&
+                     facesH[colorFace][2][0] == WHITE &&
+                     facesH[left][0][0] == WHITE &&
+                     facesH[left][1][2] == facesH[left][1][1] &&
+                     facesH[left][2][2] == facesH[left][1][1] &&
+                     facesH[opp][0][2] == facesH[left][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[colorFaceH][1][2] == WHITE &&
+                     facesH[colorFaceH][2][2] == WHITE &&
+                     facesH[right][0][2] == WHITE &&
+                     facesH[right][1][0] == facesH[right][1][1] &&
+                     facesH[right][2][0] == facesH[right][1][1] &&
+                     facesH[opp][0][0] == facesH[right][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 11;
+            }
+            else if (facesH[left][0][0] == WHITE &&
+                     facesH[left][1][0] == WHITE &&
+                     facesH[left][2][0] == WHITE &&
+                     facesH[opp][0][2] == facesH[opp][1][1] &&
+                     facesH[opp][1][2] == facesH[opp][1][1] &&
+                     facesH[opp][2][2] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else if (facesH[right][0][2] == WHITE &&
+                     facesH[right][1][2] == WHITE &&
+                     facesH[right][2][2] == WHITE &&
+                     facesH[opp][0][0] == facesH[opp][1][1] &&
+                     facesH[opp][1][0] == facesH[opp][1][1] &&
+                     facesH[opp][2][0] == facesH[opp][1][1] &&
+                     numCorrectColorsFace(cube->D) == 6)
+            {
+                return 10;
+            }
+            else
+            {
+                return 150;
+            }
+        }
+    }
+
+    return 150;
 }
 
 int RubikSolver::yellowCrossHeuristic(Rubik *cube)
@@ -1348,11 +1660,11 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
             if (facesH[face][1][0] == WHITE &&
                 facesH[face][2][0] == WHITE)
             {
-                return 4;
+                return 10;
             }
             else
             {
-                return 5;
+                return 11;
             }
         }
         else if (facesH[right][1][0] == WHITE &&
@@ -1362,11 +1674,11 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
             if (facesH[face][1][0] == WHITE &&
                 facesH[face][2][0] == WHITE)
             {
-                return 3;
+                return 9;
             }
             else
             {
-                return 2;
+                return 8;
             }
         }
         else if (whiteComplete(cube))
@@ -1382,7 +1694,7 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
 
 int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
 {
-    int aux, left, right, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
+    int aux, extraH, left, oppWhiteGoalFace, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -1443,6 +1755,7 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         color = facesH[left][0][2];
         mateCornerFace = getIndex(colors, color);
         whiteGoalFace = rightFaceIndex(mateCornerFace);
+        oppWhiteGoalFace = leftFaceIndex(leftFaceIndex(whiteGoalFace));
         cornerSteps = distance(whiteCornerFace, whiteGoalFace);
         if (whiteCornerFace == mateCornerFace)
         {
@@ -1487,6 +1800,12 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         }
         else
         {
+            extraH = 10;
+            if (correctColors == 2)
+            {
+                extraH = 0;
+            }
+
             if (cornerSteps == 1)
             {
                 return 7;
@@ -1528,18 +1847,7 @@ int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
     aux = 0;
     for (int i = 0; i < 4; i++)
     {
-        check = true; 
-        for (int j = 0; j < 3; j++)
-        {
-            if(colorsToCheck[i][1] != colorsToCheck[i][2])
-            {
-                if (getIndex(colorsToCheck[i], corners[i][j]) == -1)
-                {
-                    check = false;                    
-                }
-            }
-        }
-        if(check)
+        if (isCornerCorrectlyPos(colorsToCheck[i], corners[i]))
         {
             correctCorners++;
         }
@@ -1554,7 +1862,7 @@ int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
         }
     }
 
-    if(aux != 1)
+    if (aux != 1)
     {
         whiteFormFace = -1;
     }
@@ -1621,11 +1929,11 @@ int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
         else if (facesH[whiteFormFace][1][0] == WHITE &&
                  facesH[whiteFormFace][2][0] == WHITE)
         {
-            if(facesH[left][0][0] == WHITE)
+            if (facesH[left][0][0] == WHITE)
             {
                 return 14 + extraH;
             }
-            else if(facesH[whiteFormFace][0][0] == WHITE)
+            else if (facesH[whiteFormFace][0][0] == WHITE)
             {
                 return 13 + extraH;
             }
@@ -1637,18 +1945,228 @@ int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
 
 int RubikSolver::toSolvedHeuristic(Rubik *cube)
 {
-    int left, right, dist, color, colorFace;
+    int dist, color, colorFace;
     int value = 0;
-    int count = 4;
-
-    int ***facesH = new int **[4];
-    facesH[0] = cube->F;
-    facesH[1] = cube->R;
-    facesH[2] = cube->B;
-    facesH[3] = cube->L;
 
     int colors[4] = {31, 32, 35, 34};
-    
+    int colorsToCheck[4][4] = {
+        {YELLOW, cube->B[0][1], cube->L[0][1], YELLOW},
+        {YELLOW, cube->B[0][1], cube->R[0][1], YELLOW},
+        {YELLOW, cube->F[0][1], cube->L[0][1], YELLOW},
+        {YELLOW, cube->F[0][1], cube->R[0][1], YELLOW}};
+    int corners[4][3] = {
+        {cube->U[0][0], cube->L[0][0], cube->B[0][2]},
+        {cube->U[0][2], cube->B[0][0], cube->R[0][2]},
+        {cube->U[2][0], cube->F[0][0], cube->L[0][2]},
+        {cube->U[2][2], cube->R[0][0], cube->F[0][2]}};
+
+    bool redCheck = cube->F[1][0] == RED && cube->F[2][0] == RED && cube->F[2][1] == RED;
+    if (isCornerCorrectlyPos(colorsToCheck[0], corners[0]))
+    {
+        if (corners[0][1] == YELLOW)
+        {
+            value += 10;
+        }
+        else if (corners[0][2] == YELLOW)
+        {
+            value += 18;
+        }
+    }
+    else
+    {
+        return 360;
+    }
+
+    if (cube->U[1][2] == YELLOW)
+    {
+        if (isCornerCorrectlyPos(colorsToCheck[1], corners[1]))
+        {
+            if (corners[1][1] == YELLOW)
+            {
+                value += 9;
+            }
+            else if (corners[1][2] == YELLOW)
+            {
+                value += 17;
+            }
+        }
+        else
+        {
+            return 360;
+        }
+    }
+    else if (cube->F[1][2] != YELLOW)
+    {
+        return 360;
+    }
+
+    if (isCornerCorrectlyPos(colorsToCheck[2], corners[2]))
+    {
+        if (corners[2][1] == YELLOW)
+        {
+            value += 9;
+        }
+        else if (corners[2][2] == YELLOW)
+        {
+            value += 17;
+        }
+    }
+    else
+    {
+        return 360;
+    }
+
+    if (cube->F[1][2] == YELLOW)
+    {
+        colorsToCheck[3][1] = cube->R[1][0];
+        colorsToCheck[3][2] = cube->B[0][1];
+        if (isCornerCorrectlyPos(colorsToCheck[3], corners[3]))
+        {
+            if (corners[3][1] == YELLOW)
+            {
+                value += 17;
+            }
+            else if (corners[3][0] == YELLOW)
+            {
+                value += 9;
+            }
+        }
+        else
+        {
+            return 360;
+        }
+    }
+
+    if (cube->U[0][1] == YELLOW &&
+        cube->U[1][0] == YELLOW &&
+        cube->U[2][1] == YELLOW)
+    {
+        if (cube->U[1][2] == YELLOW)
+        {
+            if (cube->F[0][2] == YELLOW && redCheck)
+            {
+                value += 16;
+            }
+            else if (cube->D[0][0] == YELLOW && !redCheck)
+            {
+                value += 13;
+            }
+            else if (cube->D[0][2] == YELLOW && redCheck)
+            {
+                value += 12;
+            }
+            else if (cube->R[0][0] == YELLOW && !redCheck)
+            {
+                value += 9;
+            }
+            else if (cube->R[0][0] == YELLOW && redCheck)
+            {
+                value += 8;
+            }
+            else if (cube->F[2][0] == YELLOW)
+            {
+                value += 5;
+            }
+            else if (cube->R[2][0] == YELLOW && redCheck)
+            {
+                value += 4;
+            }
+            else if (cube->U[2][2] == YELLOW && !redCheck)
+            {
+                value += 1;
+            }
+            else if (cube->U[2][2] != YELLOW || !redCheck)
+            {
+                return 360;
+            }
+        }
+        else if (cube->F[1][2] == YELLOW)
+        {
+            if (cube->D[0][2] == YELLOW && redCheck)
+            {
+                value += 15;
+            }
+            else if (cube->D[0][0] == YELLOW)
+            {
+                value += 14;
+            }
+            else if (cube->B[2][0] == YELLOW && redCheck)
+            {
+                value += 11;
+            }
+            else if (cube->R[2][0] == YELLOW && !redCheck)
+            {
+                value += 10;
+            }
+            else if (cube->R[2][0] == YELLOW && redCheck)
+            {
+                value += 7;
+            }
+            else if (cube->F[2][0] == YELLOW)
+            {
+                value += 6;
+            }
+            else if (cube->R[2][2] == YELLOW && redCheck)
+            {
+                value += 3;
+            }
+            else if (cube->F[2][2] == YELLOW)
+            {
+                value += 2;
+            }
+        }
+        else
+        {
+            return 360;
+        }
+    }
+    else
+    {
+        return 360;
+    }
+
+    return value;
+}
+
+int RubikSolver::numCorrectColorsFace(int **face)
+{
+    int count = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (face[i][j] == face[1][1])
+            {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+bool RubikSolver::isEdgeInPos(int *colorsToCheck, int *edge)
+{
+    for (int i = 0; i < 2; i++)
+    {
+        if (getIndex(colorsToCheck, edge[i]) == -1)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool RubikSolver::isCornerCorrectlyPos(int *colorsToCheck, int *corner)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if (getIndex(colorsToCheck, corner[i]) == -1)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int RubikSolver::yellowLineForm(Rubik *cube)

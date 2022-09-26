@@ -20,7 +20,7 @@ public:
     Rubik();
     ~Rubik();
     Rubik *rotate(int cw, char face);
-    void disarm();
+    void disarm(int numMoves);
     Rubik *copy();
     int getValue();
     void print();

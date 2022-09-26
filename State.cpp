@@ -48,11 +48,14 @@ void State::printPath()
 {
     for (State *current = this; current != nullptr; current = current->previous)
     {
-        std::cout << current->move;
-        if (current->cw == -1)
+        if (current->depth != 0)
         {
-            std::cout << "'";
+            std::cout << current->depth << ". " << current->move;
+            if (current->cw == -1)
+            {
+                std::cout << "'";
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
 }

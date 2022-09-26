@@ -349,10 +349,12 @@ void Rubik::rotateAroundBack(int cw, int ***nFaces, int ***oFaces)
 /*
     Metodo:
     Descripcion: este metodo desarma el cubo de manera
-        aleatoria, aplicando 1000 movimientos.
+        aleatoria, aplicando n movimientos dados.
+    Parametros:
+        -numMoves: numero de movimientos a realizar.
     Retorno: vacio.
 */
-void Rubik::disarm()
+void Rubik::disarm(int numMoves)
 {
     int randFace, randCw;
     Rubik *temp;
@@ -361,7 +363,7 @@ void Rubik::disarm()
     int cws[2] = {1, -1};
 
     std::srand(time(NULL));
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < numMoves; i++)
     {
         temp = dCube;
         randFace = std::rand() % 6;
