@@ -12,7 +12,7 @@ int main()
     Rubik *cube7 = cube6->rotate(-1, 'R');
     cube7->print();
     Rubik *cubeCopy = cube->copy();
-    cube->disarm();
+    cube->disarm(1000);
     cube->print();
     std::cout << cube2->isSolved() << std::endl;
     std::cout << cubeCopy->isSolved() << std::endl;

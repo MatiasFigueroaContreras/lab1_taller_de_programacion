@@ -1,6 +1,10 @@
-#include <iostream>
+#include <ctime>
 #include "RubikSolver.h"
 
+/*
+    Se mide el tiempo que se demora en resolver
+        el cubo Rubik.
+*/
 int main(){
     clock_t ti, tf;
     double dt = 0, tavg = 0;

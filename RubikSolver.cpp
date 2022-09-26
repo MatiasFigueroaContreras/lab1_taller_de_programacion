@@ -16,8 +16,10 @@ RubikSolver::~RubikSolver()
 /*
     Metodo:
     Descripcion: este metodo permite resolver un cubo Rubik dado,
-        aplicando el algoritmo A*, y imprimiendo por consola los
-        pasos que tomo para resolverlo.
+        aplicando los pasos que conlleva uno de los algoritmos que se
+        encuentra, para esto se hacen 10 resoluciones parciales y asi
+        poder llegar al cubo Rubik armado por completo, imprimiendo por 
+        consola los pasos que tomo para resolverlo.
     Parametros:
         -startingCube: Rubik a resolver.
     Retorno: vacio.
@@ -39,7 +41,16 @@ void RubikSolver::solve(Rubik *startingCube)
 }
 
 /*
-
+    Metodo:
+    Descripcion: este metodo resuelve estados de cubos mediante
+        el algoritmo A*, usando como punto de parada el paso dado
+        ademas incluye una heuristica para cada paso.
+    Parametros:
+        -startingState: estado de partida con el cubo Rubik a 
+            llevar al paso dado.
+        -step: paso al que se busca llevar el cubo.
+    Retorno: Estado que contiene el cubo y el camino de pasos
+        para llegar a este.
 */
 State *RubikSolver::partialSolve(State *startingState, int step)
 {
@@ -62,11 +73,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
             delete closed;
             return current;
         }
-        // std::cout << std::endl;
-        // std::cout << std::endl;
-        // std::cout << "Cubo en profundidad: " << current->depth << std::endl;
-        // current->cube->print();
-        // std::cout << std::endl;
+
         for (int i = 0; i < 6; i++)
         {
             // Se iteran los posibles movimientos
@@ -80,7 +87,6 @@ State *RubikSolver::partialSolve(State *startingState, int step)
                     {
                         neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
                         int h = heuristicValue(neighborCube, step);
-                        // std::cout << "Valor Heuristico: " << h << " Profundidad: " << current->depth + 1 << std::endl;
                         open->insert(current->depth + 1 + h, neighborState);
                         openHash->add(neighborCube);
                     }
@@ -100,6 +106,15 @@ State *RubikSolver::partialSolve(State *startingState, int step)
     return nullptr;
 }
 
+/*
+    Metodo:
+    Descripcion: revisa si un cubo cumple con un paso dado
+    Parametros:
+        -cube: cubo a revisar
+        -step: paso para el cual se consultara el cubo
+    Retorno: true, si el cubo cumple con el paso,
+        false, sino lo cumple.
+*/
 bool RubikSolver::stopPoint(Rubik *cube, int step)
 {
     switch (step)
@@ -140,6 +155,15 @@ bool RubikSolver::stopPoint(Rubik *cube, int step)
     }
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene una cruz blanca
+        en su respectiva cara, y los bordes estan bien posicionados.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::whiteCross(Rubik *cube)
 {
     return cube->D[0][1] == 37 &&
@@ -152,6 +176,15 @@ bool RubikSolver::whiteCross(Rubik *cube)
            cube->L[2][1] == 34;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo la cara blanca
+        completa
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::whiteComplete(Rubik *cube)
 {
     for (int i = 0; i < 3; i++)
@@ -174,6 +207,15 @@ bool RubikSolver::whiteComplete(Rubik *cube)
     return true;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si la linea del medio 
+        horizontal del cubo esta de manera correcta.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::middleComplete(Rubik *cube)
 {
     for (int i = 0; i < 3; i++)
@@ -190,26 +232,71 @@ bool RubikSolver::middleComplete(Rubik *cube)
     return true;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el borde con color
+        rojo y azul se encuentra bien posicionado.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::edgeRedBlue(Rubik *cube)
 {
     return cube->F[1][0] == RED && cube->L[1][2] == BLUE;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el borde con color
+        rojo y verde se encuentra bien posicionado.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::edgeRedGreen(Rubik *cube)
 {
     return cube->F[1][2] == RED && cube->R[1][0] == GREEN;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el borde con color
+        naranjo y azul se encuentra bien posicionado.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::edgeOrangeBlue(Rubik *cube)
 {
     return cube->B[1][2] == ORANGE && cube->L[1][0] == BLUE;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el borde con color
+        naranjo y verde se encuentra bien posicionado.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::edgeOrangeGreen(Rubik *cube)
 {
     return cube->B[1][0] == ORANGE && cube->R[1][2] == GREEN;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene una cruz amarilla
+        en su respectiva cara.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::yellowCross(Rubik *cube)
 {
     return cube->U[0][1] == 33 &&
@@ -218,6 +305,15 @@ bool RubikSolver::yellowCross(Rubik *cube)
            cube->U[2][1] == 33;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene una cruz amarilla
+        en su respectiva cara, y sus bordes estan bien posicionados
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::correctYellowCross(Rubik *cube)
 {
     return cube->U[0][1] == 33 &&
@@ -230,6 +326,15 @@ bool RubikSolver::correctYellowCross(Rubik *cube)
            cube->L[0][1] == 34;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene las esquinas bien
+        posicionadas, es decir con los colores correctos.
+    Parametros:
+        -cube: cubo a consultar:
+    Retorno: true, si cumple.
+        false, si no cumple.
+*/
 bool RubikSolver::wellPosYellowCorners(Rubik *cube)
 {
     int colors[4][4] = {
@@ -256,6 +361,15 @@ bool RubikSolver::wellPosYellowCorners(Rubik *cube)
     return true;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta el valor heuristico de un cubo dado un paso
+        de la resolucion de este.
+    Parametros:
+        -cube: cubo a revisar
+        -step: paso para el cual se consultara el cubo.
+    Retorno: el valor heuristico del cubo dado el paso.
+*/
 int RubikSolver::heuristicValue(Rubik *cube, int step)
 {
     switch (step)
@@ -296,6 +410,17 @@ int RubikSolver::heuristicValue(Rubik *cube, int step)
     }
 }
 
+// Todas las hueristicas a continuacion, consideran que se armo el cubo
+//   hasta el paso anterior.
+
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con la cruz blanca.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::whiteCrossHeuristic(Rubik *cube)
 {
     int i, j, dist;
@@ -381,6 +506,14 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
     return value;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con la cara blanca completa.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
 {
     int left, right, dist, color, colorFace;
@@ -562,9 +695,17 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
     return value;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con el borde rojo y azul bien posicionado.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::edgeRedBlueHeuristic(Rubik *cube)
 {
-    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+    int left, right, opp, colorFace, oppU, distU, distH, colorFaceH, colorFaceU, aux;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -803,9 +944,17 @@ int RubikSolver::edgeRedBlueHeuristic(Rubik *cube)
     return 150;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con el borde rojo y verde bien posicionado.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::edgeRedGreenHeuristic(Rubik *cube)
 {
-    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+    int left, right, opp, colorFace, oppU, distU, distH, colorFaceH, colorFaceU, aux;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -826,12 +975,6 @@ int RubikSolver::edgeRedGreenHeuristic(Rubik *cube)
         {cube->U[1][0], cube->L[0][1], 3},
         {cube->U[2][1], cube->F[0][1], 0},
         {cube->U[1][2], cube->R[0][1], 1}};
-
-    int edgesD[4][2] = {
-        {cube->D[0][1], cube->F[2][1]},
-        {cube->D[1][0], cube->L[2][1]},
-        {cube->D[2][1], cube->B[2][1]},
-        {cube->D[1][2], cube->R[2][1]}};
 
     if (whiteComplete(cube))
     {
@@ -1049,9 +1192,17 @@ int RubikSolver::edgeRedGreenHeuristic(Rubik *cube)
     return 150;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con el borde naranjo y azul bien posicionado.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::edgeOrangeBlueHeuristic(Rubik *cube)
 {
-    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+    int left, right, opp, colorFace, oppU, distU, distH, colorFaceH, colorFaceU, aux;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -1072,12 +1223,6 @@ int RubikSolver::edgeOrangeBlueHeuristic(Rubik *cube)
         {cube->U[1][0], cube->L[0][1], 3},
         {cube->U[2][1], cube->F[0][1], 0},
         {cube->U[1][2], cube->R[0][1], 1}};
-
-    int edgesD[4][2] = {
-        {cube->D[0][1], cube->F[2][1]},
-        {cube->D[1][0], cube->L[2][1]},
-        {cube->D[2][1], cube->B[2][1]},
-        {cube->D[1][2], cube->R[2][1]}};
 
     if (whiteComplete(cube))
     {
@@ -1296,9 +1441,17 @@ int RubikSolver::edgeOrangeBlueHeuristic(Rubik *cube)
     return 150;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con el borde naranjo y verde bien posicionado.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::edgeOrangeGreenHeuristic(Rubik *cube)
 {
-    int left, right, opp, colorFace, oppU, distU, distH, color, colorFaceH, colorFaceU, aux;
+    int left, right, opp, colorFace, oppU, distU, distH, colorFaceH, colorFaceU, aux;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -1319,12 +1472,6 @@ int RubikSolver::edgeOrangeGreenHeuristic(Rubik *cube)
         {cube->U[1][0], cube->L[0][1], 3},
         {cube->U[2][1], cube->F[0][1], 0},
         {cube->U[1][2], cube->R[0][1], 1}};
-
-    int edgesD[4][2] = {
-        {cube->D[0][1], cube->F[2][1]},
-        {cube->D[1][0], cube->L[2][1]},
-        {cube->D[2][1], cube->B[2][1]},
-        {cube->D[1][2], cube->R[2][1]}};
 
     if (whiteComplete(cube))
     {
@@ -1542,6 +1689,14 @@ int RubikSolver::edgeOrangeGreenHeuristic(Rubik *cube)
     return 150;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con la cruz amarilla.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::yellowCrossHeuristic(Rubik *cube)
 {
     int left, right, opp, face;
@@ -1551,8 +1706,6 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
     facesH[1] = cube->R;
     facesH[2] = cube->B;
     facesH[3] = cube->L;
-
-    int colors[4] = {31, 32, 35, 34};
 
     if (stopPoint(cube, 4))
     {
@@ -1692,9 +1845,17 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
     }
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con la cruz amarilla ubicada correctamente.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
 {
-    int aux, extraH, left, oppWhiteGoalFace, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
+    int aux, left, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -1755,7 +1916,6 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         color = facesH[left][0][2];
         mateCornerFace = getIndex(colors, color);
         whiteGoalFace = rightFaceIndex(mateCornerFace);
-        oppWhiteGoalFace = leftFaceIndex(leftFaceIndex(whiteGoalFace));
         cornerSteps = distance(whiteCornerFace, whiteGoalFace);
         if (whiteCornerFace == mateCornerFace)
         {
@@ -1800,12 +1960,6 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         }
         else
         {
-            extraH = 10;
-            if (correctColors == 2)
-            {
-                extraH = 0;
-            }
-
             if (cornerSteps == 1)
             {
                 return 7;
@@ -1820,10 +1974,17 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
     return 40;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        con las esquinas amarillas en posicion correcta.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
 {
     int aux, left, right, dist, color, colorFace, correctCorners, whiteFormFace, extraH;
-    bool check;
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
     facesH[1] = cube->R;
@@ -1943,12 +2104,18 @@ int RubikSolver::wellPosYellowCornersHeuristic(Rubik *cube)
     return 60;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el valor heuristico para completar el cubo
+        por completo.
+    Parametros:
+        -cube: cubo al cual se le calculara la heuristica.
+    Retorno: el valor heuristico del cubo.
+*/
 int RubikSolver::toSolvedHeuristic(Rubik *cube)
 {
-    int dist, color, colorFace;
     int value = 0;
 
-    int colors[4] = {31, 32, 35, 34};
     int colorsToCheck[4][4] = {
         {YELLOW, cube->B[0][1], cube->L[0][1], YELLOW},
         {YELLOW, cube->B[0][1], cube->R[0][1], YELLOW},
@@ -2128,6 +2295,14 @@ int RubikSolver::toSolvedHeuristic(Rubik *cube)
     return value;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula el numero de colores correctos
+        dada una cara.
+    Parametros:
+        -face: cara a calcular el numero de colores correctos.
+    Retorno: numero de colores correctos de la cara.
+*/
 int RubikSolver::numCorrectColorsFace(int **face)
 {
     int count = 0;
@@ -2144,6 +2319,18 @@ int RubikSolver::numCorrectColorsFace(int **face)
     return count;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si un borde esta ubicado en su posicion,
+        ocupando los colores que este deberia tener y el borde con
+        sus respectivos colores.
+    Parametros:
+        -colorsToCheck: colores que el borde deberia tener.
+        -edge: borde que posee los colores
+    Retorno: 
+        true, si los colores coinciden
+        false, si no coinciden.
+*/
 bool RubikSolver::isEdgeInPos(int *colorsToCheck, int *edge)
 {
     for (int i = 0; i < 2; i++)
@@ -2156,6 +2343,18 @@ bool RubikSolver::isEdgeInPos(int *colorsToCheck, int *edge)
     return true;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si una esquina esta ubicado en su posicion,
+        ocupando los colores que este deberia tener y la esquina con
+        sus respectivos colores.
+    Parametros:
+        -colorsToCheck: colores que la esquina deberia tener.
+        -corner: borde que posee los colores
+    Retorno:
+        true, si los colores coinciden
+        false, si no coinciden.
+*/
 bool RubikSolver::isCornerCorrectlyPos(int *colorsToCheck, int *corner)
 {
     for (int i = 0; i < 3; i++)
@@ -2169,6 +2368,17 @@ bool RubikSolver::isCornerCorrectlyPos(int *colorsToCheck, int *corner)
     return true;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene una linea amarilla
+        en su respectiva cara.
+    Parametros:
+        -cube: cubo a consultar
+    Retorno:
+        2, si la linea pasa horizontalmente.
+        3, si la linea pasa verticalmente.
+        -1, si no tiene una linea.
+*/
 int RubikSolver::yellowLineForm(Rubik *cube)
 {
     if (cube->U[1][0] == YELLOW && cube->U[1][2] == YELLOW)
@@ -2184,6 +2394,20 @@ int RubikSolver::yellowLineForm(Rubik *cube)
     return -1;
 }
 
+/*
+    Metodo:
+    Descripcion: consulta si el cubo tiene los bordes amarillos
+        posicionados en una forma "sentado" (L), en su respectiva
+        cara.
+    Parametros:
+        -cube: cubo a consultar
+    Retorno:
+        2, si la forma apunta hacia el frente y la izquierda
+        1, si la forma apunta hacia atras y la izquierda
+        0, si la forma apunta hacia atras y la derecha
+        3, si la forma apunta hacia el frente y la derecha
+        -1, si no cumple con la forma.
+*/
 int RubikSolver::yellowSeatedForm(Rubik *cube)
 {
     if (cube->U[1][0] == YELLOW && cube->U[2][1] == YELLOW)
@@ -2209,6 +2433,15 @@ int RubikSolver::yellowSeatedForm(Rubik *cube)
     return -1;
 }
 
+/*
+    Metodo:
+    Descripcion: obtiene el indice de un valor en un arreglo.
+    Parametros:
+        -arr: arreglo a buscar el valor.
+        -val: valor a buscar.
+    Retorno: el indice del valor si lo encuentra,
+        sino -1.    
+*/
 int RubikSolver::getIndex(int arr[4], int val)
 {
     for (int i = 0; i < 4; i++)
@@ -2221,6 +2454,14 @@ int RubikSolver::getIndex(int arr[4], int val)
     return -1;
 }
 
+/*
+    Metodo:
+    Descripcion: dado un indice, entrega el indice de la
+        cara que esta a la izquierda.
+    Parametros:
+        -i: indice con el que se trabajara.
+    Retorno: el indice de la cara que esta a la izquierda.
+*/
 int RubikSolver::leftFaceIndex(int i)
 {
     int j = i - 1;
@@ -2231,6 +2472,14 @@ int RubikSolver::leftFaceIndex(int i)
     return j;
 }
 
+/*
+    Metodo:
+    Descripcion: dado un indice, entrega el indice de la
+        cara que esta a la derecha.
+    Parametros:
+        -i: indice con el que se trabajara.
+    Retorno: el indice de la cara que esta a la derecha.
+*/
 int RubikSolver::rightFaceIndex(int i)
 {
     int j = i + 1;
@@ -2241,6 +2490,16 @@ int RubikSolver::rightFaceIndex(int i)
     return j;
 }
 
+/*
+    Metodo:
+    Descripcion: calcula la distancia entre dos caras
+        ubicadas horizontalmente (F, R, B, L), 
+        dado el indice de estas.
+    Parametros:
+        -i: indice de la cara 1.
+        -j: indice de la cara 2.
+    Retorno: distancia entre las dos caras.
+*/
 int RubikSolver::distance(int i, int j)
 {
     int r = i - j;
