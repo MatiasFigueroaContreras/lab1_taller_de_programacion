@@ -2,7 +2,8 @@
 /*
     Descripcion de la clase RubikSolver:
     Esta clase busca resolver un cubo Rubik mediante
-    el algoritmo A* de una forma eficiente.
+    el algoritmo A* de una forma eficiente utilizando
+    heuristicas para distintos pasos del armado de este.
 */
 
 RubikSolver::RubikSolver()
@@ -18,7 +19,7 @@ RubikSolver::~RubikSolver()
     Descripcion: este metodo permite resolver un cubo Rubik dado,
         aplicando los pasos que conlleva uno de los algoritmos que se
         encuentra, para esto se hacen 10 resoluciones parciales y asi
-        poder llegar al cubo Rubik armado por completo, imprimiendo por 
+        poder llegar al cubo Rubik armado por completo, imprimiendo por
         consola los pasos que tomo para resolverlo.
     Parametros:
         -startingCube: Rubik a resolver.
@@ -46,7 +47,7 @@ void RubikSolver::solve(Rubik *startingCube)
         el algoritmo A*, usando como punto de parada el paso dado
         ademas incluye una heuristica para cada paso.
     Parametros:
-        -startingState: estado de partida con el cubo Rubik a 
+        -startingState: estado de partida con el cubo Rubik a
             llevar al paso dado.
         -step: paso al que se busca llevar el cubo.
     Retorno: Estado que contiene el cubo y el camino de pasos
@@ -166,14 +167,14 @@ bool RubikSolver::stopPoint(Rubik *cube, int step)
 */
 bool RubikSolver::whiteCross(Rubik *cube)
 {
-    return cube->D[0][1] == 37 &&
-           cube->D[1][0] == 37 &&
-           cube->D[1][2] == 37 &&
-           cube->D[2][1] == 37 &&
-           cube->F[2][1] == 31 &&
-           cube->R[2][1] == 32 &&
-           cube->B[2][1] == 35 &&
-           cube->L[2][1] == 34;
+    return cube->D[0][1] == WHITE &&
+           cube->D[1][0] == WHITE &&
+           cube->D[1][2] == WHITE &&
+           cube->D[2][1] == WHITE &&
+           cube->F[2][1] == RED &&
+           cube->R[2][1] == GREEN &&
+           cube->B[2][1] == ORANGE &&
+           cube->L[2][1] == BLUE;
 }
 
 /*
@@ -196,10 +197,10 @@ bool RubikSolver::whiteComplete(Rubik *cube)
                 return false;
             }
         }
-        if (cube->F[2][i] != 31 ||
-            cube->R[2][i] != 32 ||
-            cube->B[2][i] != 35 ||
-            cube->L[2][i] != 34)
+        if (cube->F[2][i] != RED ||
+            cube->R[2][i] != GREEN ||
+            cube->B[2][i] != ORANGE ||
+            cube->L[2][i] != BLUE)
         {
             return false;
         }
@@ -209,7 +210,7 @@ bool RubikSolver::whiteComplete(Rubik *cube)
 
 /*
     Metodo:
-    Descripcion: consulta si la linea del medio 
+    Descripcion: consulta si la linea del medio
         horizontal del cubo esta de manera correcta.
     Parametros:
         -cube: cubo a consultar:
@@ -220,10 +221,10 @@ bool RubikSolver::middleComplete(Rubik *cube)
 {
     for (int i = 0; i < 3; i++)
     {
-        if (cube->F[1][i] != 31 ||
-            cube->R[1][i] != 32 ||
-            cube->B[1][i] != 35 ||
-            cube->L[1][i] != 34)
+        if (cube->F[1][i] != RED ||
+            cube->R[1][i] != GREEN ||
+            cube->B[1][i] != ORANGE ||
+            cube->L[1][i] != BLUE)
         {
             return false;
         }
@@ -299,10 +300,10 @@ bool RubikSolver::edgeOrangeGreen(Rubik *cube)
 */
 bool RubikSolver::yellowCross(Rubik *cube)
 {
-    return cube->U[0][1] == 33 &&
-           cube->U[1][0] == 33 &&
-           cube->U[1][2] == 33 &&
-           cube->U[2][1] == 33;
+    return cube->U[0][1] == YELLOW &&
+           cube->U[1][0] == YELLOW &&
+           cube->U[1][2] == YELLOW &&
+           cube->U[2][1] == YELLOW;
 }
 
 /*
@@ -316,14 +317,14 @@ bool RubikSolver::yellowCross(Rubik *cube)
 */
 bool RubikSolver::correctYellowCross(Rubik *cube)
 {
-    return cube->U[0][1] == 33 &&
-           cube->U[1][0] == 33 &&
-           cube->U[1][2] == 33 &&
-           cube->U[2][1] == 33 &&
-           cube->F[0][1] == 31 &&
-           cube->R[0][1] == 32 &&
-           cube->B[0][1] == 35 &&
-           cube->L[0][1] == 34;
+    return cube->U[0][1] == YELLOW &&
+           cube->U[1][0] == YELLOW &&
+           cube->U[1][2] == YELLOW &&
+           cube->U[2][1] == YELLOW &&
+           cube->F[0][1] == RED &&
+           cube->R[0][1] == GREEN &&
+           cube->B[0][1] == ORANGE &&
+           cube->L[0][1] == BLUE;
 }
 
 /*
@@ -437,16 +438,16 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
     mFaces[0] = cube->D;
     mFaces[1] = cube->U;
 
-    int colors[4] = {31, 32, 35, 34};
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
     for (int k = 0; k < 4 && count != 0; k++)
     {
-        if (facesH[k][0][1] == 37 || facesH[k][2][1] == 37)
+        if (facesH[k][0][1] == WHITE || facesH[k][2][1] == WHITE)
         {
             value += 3;
             count--;
         }
 
-        if (facesH[k][1][0] == 37)
+        if (facesH[k][1][0] == WHITE)
         {
             i = leftFaceIndex(k);
             j = getIndex(colors, facesH[i][1][2]);
@@ -455,7 +456,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
             count--;
         }
 
-        if (facesH[k][1][2] == 37)
+        if (facesH[k][1][2] == WHITE)
         {
             i = rightFaceIndex(k);
             j = getIndex(colors, facesH[k][1][0]);
@@ -467,7 +468,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
 
     for (int k = 0; k < 2 && count != 0; k++)
     {
-        if (mFaces[k][0][1] == 37)
+        if (mFaces[k][0][1] == WHITE)
         {
             j = getIndex(colors, facesH[0][2 - 2 * k][1]);
             dist = distance(0, j);
@@ -475,7 +476,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
             count--;
         }
 
-        if (mFaces[k][1][2] == 37)
+        if (mFaces[k][1][2] == WHITE)
         {
             j = getIndex(colors, facesH[1][2 - 2 * k][1]);
             dist = distance(1, j);
@@ -483,7 +484,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
             count--;
         }
 
-        if (mFaces[k][2][1] == 37)
+        if (mFaces[k][2][1] == WHITE)
         {
             j = getIndex(colors, facesH[2][2 - 2 * k][1]);
             dist = distance(2, j);
@@ -491,7 +492,7 @@ int RubikSolver::whiteCrossHeuristic(Rubik *cube)
             count--;
         }
 
-        if (mFaces[k][1][0] == 37)
+        if (mFaces[k][1][0] == WHITE)
         {
             j = getIndex(colors, facesH[3][2 - 2 * k][1]);
             dist = distance(3, j);
@@ -526,7 +527,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
     facesH[2] = cube->B;
     facesH[3] = cube->L;
 
-    int colors[4] = {31, 32, 35, 34};
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
     for (int k = 0; k < 4 && count != 0; k++)
     {
         if (facesH[k][0][0] == 37)
@@ -536,7 +537,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
             colorFace = getIndex(colors, color);
             right = rightFaceIndex(colorFace);
             value += distance(left, colorFace);
-            if (facesH[colorFace][1][2] != color || facesH[right][1][0] != 37)
+            if (facesH[colorFace][1][2] != color || facesH[right][1][0] != WHITE)
             {
                 // Si el valor del borde no esta en la posicion que permite
                 //  colocar la esquina en su posicion, entonces la cantidad
@@ -546,14 +547,14 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
             count--;
         }
 
-        if (facesH[k][0][2] == 37)
+        if (facesH[k][0][2] == WHITE)
         {
             right = rightFaceIndex(k);
             color = facesH[right][0][0];
             colorFace = getIndex(colors, color);
             left = leftFaceIndex(colorFace);
             value += distance(right, colorFace);
-            if (facesH[colorFace][1][0] != color || facesH[left][1][2] != 37)
+            if (facesH[colorFace][1][0] != color || facesH[left][1][2] != WHITE)
             {
                 // Si el valor del borde no esta en la posicion que permite
                 //  colocar la esquina en su posicion, entonces la cantidad
@@ -563,13 +564,13 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
             count--;
         }
 
-        if (facesH[k][2][0] == 37)
+        if (facesH[k][2][0] == WHITE)
         {
             left = leftFaceIndex(k);
             color = facesH[left][2][2];
             colorFace = getIndex(colors, color);
             dist = distance(left, colorFace);
-            if (dist != 0 || facesH[colorFace][1][2] != color || facesH[k][1][0] != 37)
+            if (dist != 0 || facesH[colorFace][1][2] != color || facesH[k][1][0] != WHITE)
             {
                 // Si el la esquina no esta en la posicion al lado del borde blanco
                 //  más su color, entonces tomara aproximadamente 7 movimientos
@@ -578,13 +579,13 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
             count--;
         }
 
-        if (facesH[k][2][2] == 37)
+        if (facesH[k][2][2] == WHITE)
         {
             right = rightFaceIndex(k);
             color = facesH[right][2][0];
             colorFace = getIndex(colors, color);
             dist = distance(right, colorFace);
-            if (dist != 0 || facesH[colorFace][1][0] != color || facesH[k][1][2] != 37)
+            if (dist != 0 || facesH[colorFace][1][0] != color || facesH[k][1][2] != WHITE)
             {
                 // Si el la esquina no esta en la posicion al lado del borde blanco
                 //  más su color, entonces tomara aproximadamente 7 movimientos
@@ -594,7 +595,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
         }
     }
 
-    if (count != 0 && cube->U[0][0] == 37)
+    if (count != 0 && cube->U[0][0] == WHITE)
     {
         color = facesH[2][0][2];
         colorFace = getIndex(colors, color);
@@ -606,7 +607,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
         }
         count--;
     }
-    if (count != 0 && cube->U[0][2] == 37)
+    if (count != 0 && cube->U[0][2] == WHITE)
     {
         color = facesH[2][0][0];
         colorFace = getIndex(colors, color);
@@ -618,7 +619,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
         }
         count--;
     }
-    if (count != 0 && cube->U[2][0] == 37)
+    if (count != 0 && cube->U[2][0] == WHITE)
     {
         color = facesH[0][0][0];
         colorFace = getIndex(colors, color);
@@ -630,7 +631,7 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
         }
         count--;
     }
-    if (count != 0 && cube->U[2][2] == 37)
+    if (count != 0 && cube->U[2][2] == WHITE)
     {
         color = facesH[0][0][0];
         colorFace = getIndex(colors, color);
@@ -643,48 +644,48 @@ int RubikSolver::whiteCompleteHeuristic(Rubik *cube)
         count--;
     }
 
-    if (count != 0 && cube->D[0][0] == 37)
+    if (count != 0 && cube->D[0][0] == WHITE)
     {
         color = facesH[0][2][0];
         colorFace = getIndex(colors, color);
         dist = distance(0, colorFace);
-        if (dist != 0 || cube->D[0][1] != 37 || facesH[0][2][1] != color)
+        if (dist != 0 || cube->D[0][1] != WHITE || facesH[0][2][1] != color)
         {
             // Si la esquina no esta en su lugar
             value += dist + 5;
         }
         count--;
     }
-    if (count != 0 && cube->D[0][2] == 37)
+    if (count != 0 && cube->D[0][2] == WHITE)
     {
         color = facesH[0][2][2];
         colorFace = getIndex(colors, color);
         dist = distance(0, colorFace);
-        if (dist != 0 || cube->D[0][1] != 37 || facesH[0][2][1] != color)
+        if (dist != 0 || cube->D[0][1] != WHITE || facesH[0][2][1] != color)
         {
             // Si la esquina no esta en su lugar
             value += dist + 5;
         }
         count--;
     }
-    if (count != 0 && cube->D[2][0] == 37)
+    if (count != 0 && cube->D[2][0] == WHITE)
     {
         color = facesH[2][2][2];
         colorFace = getIndex(colors, color);
         dist = distance(2, colorFace);
-        if (dist != 0 || cube->D[2][1] != 37 || facesH[2][2][1] != color)
+        if (dist != 0 || cube->D[2][1] != WHITE || facesH[2][2][1] != color)
         {
             // Si la esquina no esta en su lugar
             value += dist + 5;
         }
         count--;
     }
-    if (count != 0 && cube->D[2][2] == 37)
+    if (count != 0 && cube->D[2][2] == WHITE)
     {
         color = facesH[2][2][0];
         colorFace = getIndex(colors, color);
         dist = distance(2, colorFace);
-        if (dist != 0 || cube->D[2][1] != 37 || facesH[2][2][1] != color)
+        if (dist != 0 || cube->D[2][1] != WHITE || facesH[2][2][1] != color)
         {
             // Si la esquina no esta en su lugar
             value += dist + 5;
@@ -1863,7 +1864,7 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
     facesH[2] = cube->B;
     facesH[3] = cube->L;
 
-    int colors[4] = {31, 32, 35, 34};
+    int colors[4] = {RED, GREEN, ORANGE, BLUE};
 
     whiteCornerFace = -1;
     correctColors = 0;
@@ -2327,7 +2328,7 @@ int RubikSolver::numCorrectColorsFace(int **face)
     Parametros:
         -colorsToCheck: colores que el borde deberia tener.
         -edge: borde que posee los colores
-    Retorno: 
+    Retorno:
         true, si los colores coinciden
         false, si no coinciden.
 */
@@ -2440,7 +2441,7 @@ int RubikSolver::yellowSeatedForm(Rubik *cube)
         -arr: arreglo a buscar el valor.
         -val: valor a buscar.
     Retorno: el indice del valor si lo encuentra,
-        sino -1.    
+        sino -1.
 */
 int RubikSolver::getIndex(int arr[4], int val)
 {
@@ -2493,7 +2494,7 @@ int RubikSolver::rightFaceIndex(int i)
 /*
     Metodo:
     Descripcion: calcula la distancia entre dos caras
-        ubicadas horizontalmente (F, R, B, L), 
+        ubicadas horizontalmente (F, R, B, L),
         dado el indice de estas.
     Parametros:
         -i: indice de la cara 1.
