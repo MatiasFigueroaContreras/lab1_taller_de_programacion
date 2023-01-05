@@ -3,7 +3,7 @@
 
 /*
     Se mide el tiempo que se demora en resolver
-        el cubo Rubik.
+        el cubo Rubik
 */
 int main(){
     clock_t ti, tf;
@@ -18,10 +18,12 @@ int main(){
     std::cout << "Se ejecutaran " << N << " ciclos" << std::endl;
     for (int i = 0; i < N; i++)
     {
-        ti = clock();
         cube = new Rubik();
         cube->disarm(1000);
+        std::cout << "Cubo a resolver: " << std::endl;
+        cube->print();
         solver = new RubikSolver();
+        ti = clock();
         solver->solve(cube);
         tf = clock();
         dt = (tf - ti) / (double)CLOCKS_PER_SEC;
