@@ -74,7 +74,8 @@ State *RubikSolver::partialSolve(State *startingState, int step)
             delete closed;
             return current;
         }
-
+        // std::cout << "-----------------------------" << std::endl; // Para Debug
+        // current->cube->print(); // Para Debug
         for (int i = 0; i < 6; i++)
         {
             // Se iteran los posibles movimientos
@@ -88,6 +89,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
                     {
                         neighborState = new State(neighborCube, current, current->depth + 1, faces[i], cws[j]);
                         int h = heuristicValue(neighborCube, step);
+                        // std::cout << "Movimiento: " << faces[i] << cws[j] << ", Valor Heuristico: " << h << std::endl; // Para Debug
                         open->insert(current->depth + 1 + h, neighborState);
                         openHash->add(neighborCube);
                     }
@@ -99,6 +101,7 @@ State *RubikSolver::partialSolve(State *startingState, int step)
             }
         }
         closed->add(current->cube);
+        // std::cout << "---------------------------" << std::endl; // Para Debug
     }
 
     delete open;
@@ -1856,7 +1859,8 @@ int RubikSolver::yellowCrossHeuristic(Rubik *cube)
 */
 int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
 {
-    int aux, left, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
+    int aux, left, right, dist, cornerSteps, count, color, colorFace, correctColors, whiteCornerFace, whiteGoalFace, mateCornerFace;
+    bool isShortPath = false;
 
     int ***facesH = new int **[4];
     facesH[0] = cube->F;
@@ -1881,9 +1885,12 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         {
             color = facesH[i][0][1];
             colorFace = getIndex(colors, color);
-            color = facesH[i + 1][0][1];
+            right = rightFaceIndex(i);
+            color = facesH[right][0][1];
             aux = getIndex(colors, color);
-            if (rightFaceIndex(colorFace) == aux)
+            if (rightFaceIndex(colorFace) == aux &&
+                facesH[right][0][0] != WHITE &&
+                facesH[rightFaceIndex(right)][0][0] != WHITE)
             {
                 correctColors += 2;
             }
@@ -1907,11 +1914,11 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         }
         else
         {
-            return 20;
+            return 18;
         }
     }
 
-    if (whiteCornerFace != -1 && count == 1)
+    if (whiteCornerFace != -1 && count == 1 && numCorrectColorsFace(cube->D) >= 6)
     {
         left = leftFaceIndex(whiteCornerFace);
         color = facesH[left][0][2];
@@ -1928,46 +1935,174 @@ int RubikSolver::correctYellowCrossHeuristic(Rubik *cube)
         {
             if (cornerSteps == 0)
             {
-                color = facesH[whiteGoalFace][0][1];
-                colorFace = getIndex(colors, color);
                 color = facesH[mateCornerFace][1][0];
+                colorFace = getIndex(colors, color);
+                left = leftFaceIndex(mateCornerFace);
+                color = facesH[left][0][1];
                 aux = getIndex(colors, color);
+                isShortPath = leftFaceIndex(colorFace) == aux;
 
-                if (correctColors == 3 || rightFaceIndex(aux) == colorFace)
-                {
-                    return 3;
-                }
-                else if (correctColors == 2)
-                {
-                    return 12;
-                }
-                else
-                {
-                    return 9;
-                }
+                left = leftFaceIndex(mateCornerFace);
+                color = facesH[leftFaceIndex(left)][0][1];
+                colorFace = getIndex(colors, color);
+                color = facesH[left][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = isShortPath && rightFaceIndex(colorFace) == aux;
             }
             else if (cornerSteps == 1)
             {
-                return 8;
+                color = facesH[mateCornerFace][1][0];
+                colorFace = getIndex(colors, color);
+                color = facesH[mateCornerFace][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = leftFaceIndex(colorFace) == aux;
             }
             else if (cornerSteps == 2)
             {
-                return 5;
+                color = facesH[mateCornerFace][0][1];
+                colorFace = getIndex(colors, color);
+                right = rightFaceIndex(mateCornerFace);
+                color = facesH[right][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = rightFaceIndex(colorFace) == aux;
             }
             else if (cornerSteps == 3)
             {
-                return 4;
+                right = rightFaceIndex(mateCornerFace);
+                color = facesH[right][0][1];
+                colorFace = getIndex(colors, color);
+                color = facesH[rightFaceIndex(right)][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = rightFaceIndex(colorFace) == aux;
+            }
+
+            if (isShortPath)
+            {
+                if (cornerSteps == 0)
+                {
+                    color = facesH[whiteGoalFace][0][1];
+                    colorFace = getIndex(colors, color);
+                    color = facesH[mateCornerFace][1][0];
+                    aux = getIndex(colors, color);
+
+                    if (correctColors == 3)
+                    {
+                        return 3;
+                    }
+                    else
+                    {
+                        return 9;
+                    }
+                }
+                else if (cornerSteps == 1)
+                {
+                    return 8;
+                }
+                else if (cornerSteps == 2 && correctColors == 3)
+                {
+                    return 5;
+                }
+                else if (cornerSteps == 3 && correctColors == 3)
+                {
+                    return 4;
+                }
+            }
+            else
+            {
+                if (cornerSteps == 0)
+                {
+                    color = facesH[whiteGoalFace][0][1];
+                    colorFace = getIndex(colors, color);
+                    color = facesH[mateCornerFace][1][0];
+                    aux = getIndex(colors, color);
+                    left = leftFaceIndex(mateCornerFace);
+                    color = facesH[left][0][1];
+                    if (correctColors == 2 || rightFaceIndex(aux) == colorFace || leftFaceIndex(aux) == getIndex(colors, color))
+                    {
+                        return 11;
+                    }
+                    else
+                    {
+                        return 17;
+                    }
+                }
+                else if (cornerSteps == 1)
+                {
+                    return 16;
+                }
+                else if (cornerSteps == 2)
+                {
+                    color = facesH[mateCornerFace][1][0];
+                    colorFace = getIndex(colors, color);
+                    left = leftFaceIndex(mateCornerFace);
+                    color = facesH[left][0][1];
+                    aux = getIndex(colors, color);
+                    right = rightFaceIndex(mateCornerFace);
+                    color = facesH[right][0][1];
+
+                    if (correctColors == 2 || rightFaceIndex(colorFace) == aux || leftFaceIndex(colorFace) == getIndex(colors, color))
+                    {
+                        return 13;
+                    }
+                }
+                else if (cornerSteps == 3)
+                {
+                    color = facesH[mateCornerFace][0][1];
+                    colorFace = getIndex(colors, color);
+                    color = facesH[mateCornerFace][1][0];
+                    aux = getIndex(colors, color);
+                    left = leftFaceIndex(mateCornerFace);
+                    left = leftFaceIndex(left);
+                    color = facesH[left][0][1];
+
+                    if (correctColors == 2 || rightFaceIndex(aux) == colorFace || leftFaceIndex(aux) == getIndex(colors, color))
+                    {
+                        return 12;
+                    }
+                }
             }
         }
-        else
+        else if (numCorrectColorsFace(cube->D) == 8)
         {
             if (cornerSteps == 1)
             {
-                return 7;
+                color = facesH[mateCornerFace][1][2];
+                colorFace = getIndex(colors, color);
+                color = facesH[mateCornerFace][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = rightFaceIndex(colorFace) == aux;
             }
             else if (cornerSteps == 2)
             {
-                return 6;
+                color = facesH[mateCornerFace][1][2];
+                colorFace = getIndex(colors, color);
+                right = rightFaceIndex(mateCornerFace);
+                color = facesH[right][0][1];
+                aux = getIndex(colors, color);
+                isShortPath = rightFaceIndex(colorFace) == aux;
+            }
+
+            if (isShortPath)
+            {
+                if (cornerSteps == 1)
+                {
+                    return 7;
+                }
+                else if (cornerSteps == 2)
+                {
+                    return 6;
+                }
+            }
+            else
+            {
+                if (cornerSteps == 1)
+                {
+                    return 15;
+                }
+                else if (cornerSteps == 2)
+                {
+                    return 14;
+                }
             }
         }
     }
